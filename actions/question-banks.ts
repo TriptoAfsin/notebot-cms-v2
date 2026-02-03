@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import * as qbService from "@/services/questionBanks";
+import * as qbService from "@/services/question-banks";
 import { invalidateQBsCache } from "@/services/cache";
 
 const qbSchema = z.object({

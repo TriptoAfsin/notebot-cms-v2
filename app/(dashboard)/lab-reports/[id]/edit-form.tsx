@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { updateLabReportAction } from "@/actions/labReports";
+import { updateLabReportAction } from "@/actions/lab-reports";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

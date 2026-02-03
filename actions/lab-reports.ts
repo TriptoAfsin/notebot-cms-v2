@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import * as labReportService from "@/services/labReports";
+import * as labReportService from "@/services/lab-reports";
 import { invalidateLabsCache } from "@/services/cache";
 
 const labReportSchema = z.object({

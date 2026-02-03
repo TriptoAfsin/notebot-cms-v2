@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getQuestionBankById } from "@/services/questionBanks";
+import { getQuestionBankById } from "@/services/question-banks";
 import { getLevels } from "@/services/levels";
 import { EditQuestionBankForm } from "./edit-form";
 

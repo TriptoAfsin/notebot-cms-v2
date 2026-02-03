@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getLabReportById } from "@/services/labReports";
+import { getLabReportById } from "@/services/lab-reports";
 import { getLevels } from "@/services/levels";
 import { EditLabReportForm } from "./edit-form";
 

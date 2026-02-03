@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getLabReports } from "@/services/labReports";
+import { getLabReports } from "@/services/lab-reports";
 import { getLevels } from "@/services/levels";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

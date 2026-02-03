@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getQuestionBanks } from "@/services/questionBanks";
+import { getQuestionBanks } from "@/services/question-banks";
 import { getLevels } from "@/services/levels";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
