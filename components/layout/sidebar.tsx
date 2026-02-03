@@ -12,6 +12,9 @@ import {
   Calendar,
   BarChart3,
   Home,
+  Users,
+  Mail,
+  FileInput,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +28,9 @@ const navItems = [
   { href: "/question-banks", label: "Question Banks", icon: HelpCircle },
   { href: "/routines", label: "Routines", icon: Calendar },
   { href: "/results", label: "Results", icon: BarChart3 },
+  { href: "/users", label: "Users", icon: Users },
+  { href: "/invitations", label: "Invitations", icon: Mail },
+  { href: "/submissions", label: "Submissions", icon: FileInput },
 ];
 
 export function AppSidebar() {

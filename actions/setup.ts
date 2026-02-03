@@ -29,7 +29,7 @@ export async function createSuperAdmin(data: {
 }) {
   const parsed = setupSchema.safeParse(data);
   if (!parsed.success) {
-    return { success: false, error: parsed.error.errors[0].message };
+    return { success: false, error: parsed.error.issues[0].message };
   }
 
   // Re-check that no admin exists (prevent race conditions)
