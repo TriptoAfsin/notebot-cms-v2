@@ -1,0 +1,13 @@
+"use client";
+
+import { DeleteDialog } from "@/components/delete-dialog";
+import { deleteTopicAction } from "@/actions/topics";
+
+export function DeleteTopicButton({ id, subjectId }: { id: number; subjectId: number }) {
+  return (
+    <DeleteDialog
+      itemName="Topic"
+      onDelete={() => deleteTopicAction(id, subjectId)}
+    />
+  );
+}
