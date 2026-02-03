@@ -7,7 +7,7 @@ Content management system for BUTEX NoteBot. Manage academic notes, lab reports,
 - **Framework:** Next.js 16 (App Router)
 - **Language:** TypeScript
 - **Database:** PostgreSQL (via Drizzle ORM)
-- **Cache:** Redis (via ioredis) for cache invalidation
+- **Cache:** Redis for cache invalidation
 - **Auth:** Better Auth (email/password)
 - **Email:** Resend (transactional emails)
 - **UI:** Tailwind CSS + shadcn/ui + Radix UI
