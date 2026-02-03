@@ -37,12 +37,12 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 border-r bg-card min-h-screen p-4">
+    <aside className="w-64 border-r bg-sidebar pattern-dots min-h-screen p-4 flex flex-col">
       <div className="mb-8">
-        <h1 className="text-xl font-bold">NoteBot CMS</h1>
-        <p className="text-sm text-muted-foreground">Content Management</p>
+        <h1 className="text-xl font-bold text-primary">NoteBot CMS</h1>
+        <p className="text-xs text-muted-foreground">Content Management</p>
       </div>
-      <nav className="space-y-1">
+      <nav className="space-y-1 flex-1">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||

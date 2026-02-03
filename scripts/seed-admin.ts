@@ -17,9 +17,14 @@ async function seedAdmin() {
 
   const pool = new Pool({ connectionString: connStr });
 
-  const email = "AfsinTripto@gmail.com";
-  const password = "botPass3107#";
-  const name = "Tripto Afsin";
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  const name = process.env.ADMIN_NAME || "Admin";
+
+  if (!email || !password) {
+    console.error("ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env.local");
+    process.exit(1);
+  }
 
   console.log("Seeding admin user...");
 

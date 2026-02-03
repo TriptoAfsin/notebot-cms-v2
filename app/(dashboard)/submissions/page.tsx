@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -13,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getSubmissions } from "@/actions/note-submissions";
+import { useQueryParam } from "@/hooks/use-query-param";
 
 type Submission = {
   id: number;
@@ -29,19 +31,19 @@ function StatusBadge({ status }: { status: string }) {
   switch (status) {
     case "approved":
       return (
-        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+        <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400">
           Approved
         </Badge>
       );
     case "rejected":
       return (
-        <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+        <Badge className="bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400">
           Rejected
         </Badge>
       );
     default:
       return (
-        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400">
           Pending
         </Badge>
       );
@@ -55,20 +57,18 @@ const tabs = [
   { label: "Rejected", value: "rejected" },
 ];
 
-export default function SubmissionsPage() {
-  const [activeTab, setActiveTab] = useState("all");
+function SubmissionsContent() {
+  const [status, setStatus] = useQueryParam("status", "all");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    getSubmissions(activeTab === "all" ? undefined : activeTab).then(
-      (result) => {
-        setSubmissions(result.data || []);
-        setLoading(false);
-      }
-    );
-  }, [activeTab]);
+    getSubmissions(status === "all" ? undefined : status).then((result) => {
+      setSubmissions(result.data || []);
+      setLoading(false);
+    });
+  }, [status]);
 
   return (
     <div>
@@ -80,9 +80,9 @@ export default function SubmissionsPage() {
         {tabs.map((tab) => (
           <Button
             key={tab.value}
-            variant={activeTab === tab.value ? "default" : "outline"}
+            variant={status === tab.value ? "default" : "outline"}
             size="sm"
-            onClick={() => setActiveTab(tab.value)}
+            onClick={() => setStatus(tab.value)}
           >
             {tab.label}
           </Button>
@@ -90,7 +90,11 @@ export default function SubmissionsPage() {
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground">Loading...</p>
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full" />
+          ))}
+        </div>
       ) : (
         <Table>
           <TableHeader>
@@ -142,5 +146,13 @@ export default function SubmissionsPage() {
         </Table>
       )}
     </div>
+  );
+}
+
+export default function SubmissionsPage() {
+  return (
+    <Suspense fallback={<div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>}>
+      <SubmissionsContent />
+    </Suspense>
   );
 }
