@@ -1,15 +1,17 @@
-import { headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 
 export default async function LoginLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const cookieStore = await cookies();
+  const hasSession =
+    cookieStore.get("better-auth.session_token") ||
+    cookieStore.get("__Secure-better-auth.session_token");
 
-  if (session) {
+  if (hasSession) {
     redirect("/dashboard");
   }
 
