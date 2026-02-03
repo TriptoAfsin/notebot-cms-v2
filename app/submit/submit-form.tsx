@@ -220,6 +220,12 @@ export function SubmitForm({ config }: { config: SubmissionConfig }) {
               {errors.contactInfo && <p className="text-xs text-destructive">{errors.contactInfo[0]}</p>}
             </div>
 
+            {/* Honeypot - hidden from humans, bots auto-fill it */}
+            <div className="absolute opacity-0 -z-10 pointer-events-none" aria-hidden="true" tabIndex={-1}>
+              <label htmlFor="website">Website</label>
+              <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+            </div>
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Submitting..." : "Submit Note"}
             </Button>

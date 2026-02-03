@@ -30,6 +30,13 @@ const submissionSchema = z.object({
 });
 
 export async function createSubmission(formData: FormData) {
+  // Honeypot check — bots auto-fill this hidden field, humans never do
+  const honeypot = formData.get("website");
+  if (honeypot) {
+    // Silently reject — don't reveal it's a bot check
+    return { success: true };
+  }
+
   const parsed = submissionSchema.safeParse({
     name: formData.get("name"),
     batch: formData.get("batch"),
