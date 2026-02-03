@@ -21,18 +21,21 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    try {
-      const result = await signIn.email({ email, password });
-      if (result.error) {
-        setError(result.error.message || "Invalid credentials");
-      } else {
-        router.push("/dashboard");
-      }
-    } catch {
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    await signIn.email({
+      email,
+      password,
+      callbackURL: "/dashboard",
+      fetchOptions: {
+        onError: (ctx) => {
+          setError(ctx.error.message || "Invalid credentials");
+          setLoading(false);
+        },
+        onSuccess: () => {
+          router.push("/dashboard");
+          router.refresh();
+        },
+      },
+    });
   };
 
   return (
