@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't need auth
-  const publicRoutes = ["/login", "/api/auth"];
+  const publicRoutes = ["/login", "/api/auth", "/setup"];
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
