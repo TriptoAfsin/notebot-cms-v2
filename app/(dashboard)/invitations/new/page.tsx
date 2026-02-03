@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,15 +24,33 @@ import {
 import { createInvitation } from "@/actions/invitations";
 import { toast } from "sonner";
 
+const schema = z.object({
+  email: z.string().email("Invalid email").optional().or(z.literal("")),
+  role: z.enum(["admin", "user"]),
+  expiresInDays: z.string(),
+});
+
+type FormValues = z.infer<typeof schema>;
+
 export default function NewInvitationPage() {
   const router = useRouter();
-  const [role, setRole] = useState("user");
-  const [expiresInDays, setExpiresInDays] = useState("7");
   const [generatedLink, setGeneratedLink] = useState("");
 
-  const handleSubmit = async (formData: FormData) => {
-    formData.set("role", role);
-    formData.set("expiresInDays", expiresInDays);
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "", role: "user", expiresInDays: "7" },
+  });
+
+  const onSubmit = async (data: FormValues) => {
+    const formData = new FormData();
+    if (data.email) formData.set("email", data.email);
+    formData.set("role", data.role);
+    formData.set("expiresInDays", data.expiresInDays);
 
     const result = await createInvitation(formData);
     if (result.success && result.token) {
@@ -81,15 +102,16 @@ export default function NewInvitationPage() {
           <CardTitle>Invitation Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email (optional)</Label>
               <Input
                 id="email"
-                name="email"
                 type="email"
                 placeholder="user@example.com"
+                {...register("email")}
               />
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               <p className="text-xs text-muted-foreground">
                 If set, the email will be pre-filled during registration.
               </p>
@@ -97,35 +119,49 @@ export default function NewInvitationPage() {
 
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             <div className="space-y-2">
               <Label>Expires In</Label>
-              <Select value={expiresInDays} onValueChange={setExpiresInDays}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 day</SelectItem>
-                  <SelectItem value="3">3 days</SelectItem>
-                  <SelectItem value="7">7 days</SelectItem>
-                  <SelectItem value="14">14 days</SelectItem>
-                  <SelectItem value="30">30 days</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="expiresInDays"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 day</SelectItem>
+                      <SelectItem value="3">3 days</SelectItem>
+                      <SelectItem value="7">7 days</SelectItem>
+                      <SelectItem value="14">14 days</SelectItem>
+                      <SelectItem value="30">30 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             <div className="flex gap-2">
-              <Button type="submit">Create Invitation</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Creating..." : "Create Invitation"}
+              </Button>
               <Button
                 type="button"
                 variant="outline"

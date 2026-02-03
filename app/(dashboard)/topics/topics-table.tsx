@@ -3,7 +3,12 @@
 import { useState, useMemo } from "react";
 import { Link } from "next-view-transitions";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -12,9 +17,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Plus, Pencil } from "lucide-react";
 import { DeleteTopicButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
+import { SearchableSelect } from "@/components/searchable-select";
+import { updateTopicAction } from "@/actions/topics";
+import { toast } from "sonner";
 
 type Topic = {
   id: number;
@@ -32,6 +46,19 @@ type Subject = {
   displayName: string;
 };
 
+const editSchema = z.object({
+  subjectId: z.string().min(1, "Subject is required"),
+  name: z.string().min(1, "Name is required").max(100),
+  displayName: z.string().min(1, "Display name is required").max(200),
+  slug: z.string().min(1, "Slug is required").max(100),
+  author: z.string().optional(),
+  year: z.string().optional(),
+  department: z.string().optional(),
+  sortOrder: z.coerce.number(),
+});
+
+type EditFormValues = z.infer<typeof editSchema>;
+
 export function TopicsTable({
   topics,
   subjects,
@@ -42,7 +69,22 @@ export function TopicsTable({
   currentSubjectId?: number;
 }) {
   const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<Topic | null>(null);
   const router = useRouter();
+
+  const form = useForm<EditFormValues>({
+    resolver: zodResolver(editSchema),
+    defaultValues: {
+      subjectId: "",
+      name: "",
+      displayName: "",
+      slug: "",
+      author: "",
+      year: "",
+      department: "",
+      sortOrder: 0,
+    },
+  });
 
   const filtered = useMemo(() => {
     if (!search.trim()) return topics;
@@ -55,6 +97,54 @@ export function TopicsTable({
         t.subjectName.toLowerCase().includes(q)
     );
   }, [topics, search]);
+
+  const subjectOptions = subjects.map((s) => ({
+    value: String(s.id),
+    label: s.displayName,
+  }));
+
+  function openEdit(topic: Topic) {
+    const meta = (topic.metadata ?? {}) as Record<string, unknown>;
+    form.reset({
+      subjectId: String(topic.subjectId),
+      name: topic.name,
+      displayName: topic.displayName,
+      slug: topic.slug,
+      author: (meta.author as string) ?? "",
+      year: meta.year != null ? String(meta.year) : "",
+      department: (meta.department as string) ?? "",
+      sortOrder: topic.sortOrder,
+    });
+    setEditing(topic);
+  }
+
+  async function onSubmit(values: EditFormValues) {
+    if (!editing) return;
+
+    const formData = new FormData();
+    formData.set("subjectId", values.subjectId);
+    formData.set("name", values.name);
+    formData.set("displayName", values.displayName);
+    formData.set("slug", values.slug);
+    formData.set("sortOrder", String(values.sortOrder));
+
+    const metadata: Record<string, string | number> = {};
+    if (values.author) metadata.author = values.author;
+    if (values.year) metadata.year = parseInt(values.year);
+    if (values.department) metadata.department = values.department;
+    if (Object.keys(metadata).length > 0) {
+      formData.set("metadata", JSON.stringify(metadata));
+    }
+
+    const result = await updateTopicAction(editing.id, formData);
+    if (result.success) {
+      toast.success("Topic updated");
+      setEditing(null);
+      router.refresh();
+    } else {
+      toast.error("Failed to update topic");
+    }
+  }
 
   return (
     <div>
@@ -115,11 +205,13 @@ export function TopicsTable({
                 <TableCell>{topic.sortOrder}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
-                    <Link href={`/topics/${topic.id}`}>
-                      <Button variant="outline" size="icon-xs">
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                    </Link>
+                    <Button
+                      variant="outline"
+                      size="icon-xs"
+                      onClick={() => openEdit(topic)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
                     <DeleteTopicButton id={topic.id} subjectId={topic.subjectId} />
                   </div>
                 </TableCell>
@@ -138,6 +230,79 @@ export function TopicsTable({
       <p className="text-xs text-muted-foreground mt-2">
         {filtered.length} of {topics.length} topics
       </p>
+
+      <Sheet open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+        <SheetContent className="sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Edit Topic</SheetTitle>
+          </SheetHeader>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4 pt-0">
+            <div className="space-y-2">
+              <Label htmlFor="edit-subjectId">Subject</Label>
+              <SearchableSelect
+                options={subjectOptions}
+                value={form.watch("subjectId")}
+                onValueChange={(val) => form.setValue("subjectId", val, { shouldValidate: true })}
+                placeholder="Select a subject"
+                searchPlaceholder="Search subjects..."
+              />
+              {form.formState.errors.subjectId && (
+                <p className="text-sm text-destructive">{form.formState.errors.subjectId.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Name</Label>
+              <Input id="edit-name" {...form.register("name")} placeholder="Topic name" />
+              {form.formState.errors.name && (
+                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-displayName">Display Name</Label>
+              <Input id="edit-displayName" {...form.register("displayName")} placeholder="Display name" />
+              {form.formState.errors.displayName && (
+                <p className="text-sm text-destructive">{form.formState.errors.displayName.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-slug">Slug</Label>
+              <Input id="edit-slug" {...form.register("slug")} placeholder="topic-slug" />
+              {form.formState.errors.slug && (
+                <p className="text-sm text-destructive">{form.formState.errors.slug.message}</p>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-author">Author</Label>
+                <Input id="edit-author" {...form.register("author")} placeholder="Author name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-year">Year</Label>
+                <Input id="edit-year" {...form.register("year")} type="number" placeholder="2024" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-department">Department</Label>
+                <Input id="edit-department" {...form.register("department")} placeholder="CSE, EEE, etc." />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-sortOrder">Sort Order</Label>
+              <Input id="edit-sortOrder" {...form.register("sortOrder")} type="number" />
+              {form.formState.errors.sortOrder && (
+                <p className="text-sm text-destructive">{form.formState.errors.sortOrder.message}</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Saving..." : "Save"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setEditing(null)}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
