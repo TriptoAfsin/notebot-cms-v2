@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "next-view-transitions";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -27,6 +27,8 @@ import {
 import { Plus, Pencil, ExternalLink } from "lucide-react";
 import { DeleteRoutineButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
+import { TablePagination } from "@/components/table-pagination";
+import { useDebounce } from "@/hooks/use-debounce";
 import { updateRoutineAction } from "@/actions/routines";
 import { toast } from "sonner";
 
@@ -70,6 +72,9 @@ export function RoutinesTable({
   levels: Level[];
 }) {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [editing, setEditing] = useState<Routine | null>(null);
   const router = useRouter();
 
@@ -78,8 +83,8 @@ export function RoutinesTable({
   });
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return routines;
-    const q = search.toLowerCase();
+    if (!debouncedSearch.trim()) return routines;
+    const q = debouncedSearch.toLowerCase();
     return routines.filter(
       (r) =>
         r.title.toLowerCase().includes(q) ||
@@ -87,7 +92,12 @@ export function RoutinesTable({
         (r.term && r.term.toLowerCase().includes(q)) ||
         (r.department && r.department.toLowerCase().includes(q))
     );
-  }, [routines, search]);
+  }, [routines, debouncedSearch]);
+
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const openEdit = (routine: Routine) => {
     form.reset({
@@ -162,13 +172,13 @@ export function RoutinesTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((routine) => (
+            {paginated.map((routine) => (
               <TableRow key={routine.id}>
                 <TableCell className="font-mono text-xs">{routine.id}</TableCell>
                 <TableCell className="text-sm">{routine.levelName}</TableCell>
                 <TableCell>{routine.term || "-"}</TableCell>
                 <TableCell>{routine.department || "-"}</TableCell>
-                <TableCell className="font-medium">{routine.title}</TableCell>
+                <TableCell className="font-medium max-w-[200px] truncate" title={routine.title}>{routine.title}</TableCell>
                 <TableCell>
                   <a
                     href={routine.url}
@@ -190,7 +200,7 @@ export function RoutinesTable({
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {paginated.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   {search ? "No routines match your search" : "No routines found"}
@@ -200,9 +210,14 @@ export function RoutinesTable({
           </TableBody>
         </Table>
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
-        {filtered.length} of {routines.length} routines
-      </p>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        pageSize={pageSize}
+        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        totalItems={filtered.length}
+      />
 
       <Sheet open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
         <SheetContent className="sm:max-w-lg overflow-y-auto">

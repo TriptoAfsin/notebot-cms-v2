@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { Link } from "next-view-transitions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,9 @@ import {
 import { getSubmissions } from "@/actions/note-submissions";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { ExternalLink, Copy, Settings, Check } from "lucide-react";
+import { SearchInput } from "@/components/search-input";
+import { TablePagination } from "@/components/table-pagination";
+import { useDebounce } from "@/hooks/use-debounce";
 import { toast } from "sonner";
 
 type Submission = {
@@ -83,6 +86,10 @@ function SubmissionsContent() {
   const [status, setStatus] = useQueryParam("status", "all");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const publicUrl = typeof window !== "undefined"
     ? `${window.location.origin}/submit`
@@ -95,6 +102,24 @@ function SubmissionsContent() {
       setLoading(false);
     });
   }, [status]);
+
+  const filtered = useMemo(() => {
+    if (!debouncedSearch.trim()) return submissions;
+    const q = debouncedSearch.toLowerCase();
+    return submissions.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.subjectName.toLowerCase().includes(q) ||
+        s.topicName.toLowerCase().includes(q) ||
+        s.batch.toLowerCase().includes(q) ||
+        s.department.toLowerCase().includes(q)
+    );
+  }, [submissions, debouncedSearch]);
+
+  useEffect(() => { setPage(1); }, [debouncedSearch, status]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div>
@@ -132,17 +157,24 @@ function SubmissionsContent() {
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        {tabs.map((tab) => (
-          <Button
-            key={tab.value}
-            variant={status === tab.value ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatus(tab.value)}
-          >
-            {tab.label}
-          </Button>
-        ))}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search submissions..."
+        />
+        <div className="flex flex-wrap gap-2">
+          {tabs.map((tab) => (
+            <Button
+              key={tab.value}
+              variant={status === tab.value ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatus(tab.value)}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
@@ -152,6 +184,7 @@ function SubmissionsContent() {
           ))}
         </div>
       ) : (
+        <>
         <div className="rounded-lg border overflow-x-auto">
           <Table>
             <TableHeader>
@@ -167,7 +200,7 @@ function SubmissionsContent() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {submissions.map((sub) => (
+              {paginated.map((sub) => (
                 <TableRow key={sub.id}>
                   <TableCell className="font-medium">{sub.name}</TableCell>
                   <TableCell className="text-sm">{sub.subjectName}</TableCell>
@@ -189,19 +222,28 @@ function SubmissionsContent() {
                   </TableCell>
                 </TableRow>
               ))}
-              {submissions.length === 0 && (
+              {paginated.length === 0 && (
                 <TableRow>
                   <TableCell
                     colSpan={8}
                     className="text-center text-muted-foreground py-8"
                   >
-                    No submissions found
+                    {search ? "No submissions match your search" : "No submissions found"}
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
+        <TablePagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+          totalItems={filtered.length}
+        />
+        </>
       )}
     </div>
   );

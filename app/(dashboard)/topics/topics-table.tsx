@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "next-view-transitions";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -26,6 +26,8 @@ import {
 import { Plus, Pencil } from "lucide-react";
 import { DeleteTopicButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
+import { TablePagination } from "@/components/table-pagination";
+import { useDebounce } from "@/hooks/use-debounce";
 import { SearchableSelect } from "@/components/searchable-select";
 import { updateTopicAction } from "@/actions/topics";
 import { toast } from "sonner";
@@ -39,6 +41,8 @@ type Topic = {
   slug: string;
   sortOrder: number;
   metadata: unknown;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type Subject = {
@@ -69,6 +73,9 @@ export function TopicsTable({
   currentSubjectId?: number;
 }) {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [editing, setEditing] = useState<Topic | null>(null);
   const router = useRouter();
 
@@ -87,8 +94,8 @@ export function TopicsTable({
   });
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return topics;
-    const q = search.toLowerCase();
+    if (!debouncedSearch.trim()) return topics;
+    const q = debouncedSearch.toLowerCase();
     return topics.filter(
       (t) =>
         t.name.toLowerCase().includes(q) ||
@@ -96,7 +103,12 @@ export function TopicsTable({
         t.slug.toLowerCase().includes(q) ||
         t.subjectName.toLowerCase().includes(q)
     );
-  }, [topics, search]);
+  }, [topics, debouncedSearch]);
+
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const subjectOptions = subjects.map((s) => ({
     value: String(s.id),
@@ -191,11 +203,13 @@ export function TopicsTable({
               <TableHead>Display Name</TableHead>
               <TableHead className="w-32">Slug</TableHead>
               <TableHead className="w-20">Order</TableHead>
+              <TableHead className="w-28">Created</TableHead>
+              <TableHead className="w-28">Updated</TableHead>
               <TableHead className="w-20">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((topic) => (
+            {paginated.map((topic) => (
               <TableRow key={topic.id}>
                 <TableCell className="font-mono text-xs">{topic.id}</TableCell>
                 <TableCell className="text-sm">{topic.subjectName}</TableCell>
@@ -203,6 +217,8 @@ export function TopicsTable({
                 <TableCell>{topic.displayName}</TableCell>
                 <TableCell className="font-mono text-xs">{topic.slug}</TableCell>
                 <TableCell>{topic.sortOrder}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">{new Date(topic.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">{new Date(topic.updatedAt).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
                     <Button
@@ -217,9 +233,9 @@ export function TopicsTable({
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {paginated.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                   {search ? "No topics match your search" : "No topics found"}
                 </TableCell>
               </TableRow>
@@ -227,9 +243,14 @@ export function TopicsTable({
           </TableBody>
         </Table>
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
-        {filtered.length} of {topics.length} topics
-      </p>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        pageSize={pageSize}
+        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        totalItems={filtered.length}
+      />
 
       <Sheet open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
         <SheetContent className="sm:max-w-lg overflow-y-auto">

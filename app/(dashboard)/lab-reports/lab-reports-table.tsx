@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "next-view-transitions";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -27,6 +27,8 @@ import {
 import { Plus, Pencil, ExternalLink } from "lucide-react";
 import { DeleteLabReportButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
+import { TablePagination } from "@/components/table-pagination";
+import { useDebounce } from "@/hooks/use-debounce";
 import { updateLabReportAction } from "@/actions/lab-reports";
 import { toast } from "sonner";
 
@@ -72,6 +74,9 @@ export function LabReportsTable({
   currentLevelId?: number;
 }) {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [editing, setEditing] = useState<LabReport | null>(null);
   const router = useRouter();
 
@@ -80,8 +85,8 @@ export function LabReportsTable({
   });
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return labReports;
-    const q = search.toLowerCase();
+    if (!debouncedSearch.trim()) return labReports;
+    const q = debouncedSearch.toLowerCase();
     return labReports.filter(
       (r) =>
         r.title.toLowerCase().includes(q) ||
@@ -89,7 +94,12 @@ export function LabReportsTable({
         r.topicName.toLowerCase().includes(q) ||
         r.levelName.toLowerCase().includes(q)
     );
-  }, [labReports, search]);
+  }, [labReports, debouncedSearch]);
+
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const openEdit = (report: LabReport) => {
     form.reset({
@@ -174,13 +184,13 @@ export function LabReportsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((report) => (
+            {paginated.map((report) => (
               <TableRow key={report.id}>
                 <TableCell className="font-mono text-xs">{report.id}</TableCell>
                 <TableCell className="text-sm">{report.levelName}</TableCell>
                 <TableCell>{report.subjectSlug}</TableCell>
                 <TableCell className="font-medium">{report.topicName}</TableCell>
-                <TableCell>{report.title}</TableCell>
+                <TableCell className="max-w-[200px] truncate" title={report.title}>{report.title}</TableCell>
                 <TableCell>
                   <a
                     href={report.url}
@@ -202,7 +212,7 @@ export function LabReportsTable({
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {paginated.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   {search ? "No lab reports match your search" : "No lab reports found"}
@@ -212,9 +222,14 @@ export function LabReportsTable({
           </TableBody>
         </Table>
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
-        {filtered.length} of {labReports.length} lab reports
-      </p>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        pageSize={pageSize}
+        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        totalItems={filtered.length}
+      />
 
       <Sheet open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
         <SheetContent className="sm:max-w-lg overflow-y-auto">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "next-view-transitions";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/sheet";
 import { Plus, Pencil } from "lucide-react";
 import { DeleteLevelButton } from "./delete-button";
+import { SearchInput } from "@/components/search-input";
+import { TablePagination } from "@/components/table-pagination";
+import { useDebounce } from "@/hooks/use-debounce";
 import { updateLevelAction } from "@/actions/levels";
 import { toast } from "sonner";
 
@@ -40,11 +43,31 @@ type Level = {
 
 export function LevelsTable({ levels }: { levels: Level[] }) {
   const router = useRouter();
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [editing, setEditing] = useState<Level | null>(null);
 
   const form = useForm<EditFormValues>({
     resolver: zodResolver(editSchema),
   });
+
+  const filtered = useMemo(() => {
+    if (!debouncedSearch.trim()) return levels;
+    const q = debouncedSearch.toLowerCase();
+    return levels.filter(
+      (l) =>
+        l.name.toLowerCase().includes(q) ||
+        l.displayName.toLowerCase().includes(q) ||
+        l.slug.toLowerCase().includes(q)
+    );
+  }, [levels, debouncedSearch]);
+
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const openEdit = (level: Level) => {
     form.reset({
@@ -75,7 +98,7 @@ export function LevelsTable({ levels }: { levels: Level[] }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">Levels</h1>
         <Link href="/levels/new">
           <Button>
@@ -83,6 +106,14 @@ export function LevelsTable({ levels }: { levels: Level[] }) {
             Add Level
           </Button>
         </Link>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search levels..."
+        />
       </div>
 
       <div className="rounded-lg border overflow-x-auto">
@@ -98,7 +129,7 @@ export function LevelsTable({ levels }: { levels: Level[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {levels.map((level) => (
+            {paginated.map((level) => (
               <TableRow key={level.id}>
                 <TableCell className="font-mono text-xs">{level.id}</TableCell>
                 <TableCell className="font-medium">{level.name}</TableCell>
@@ -115,16 +146,25 @@ export function LevelsTable({ levels }: { levels: Level[] }) {
                 </TableCell>
               </TableRow>
             ))}
-            {levels.length === 0 && (
+            {paginated.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                  No levels found
+                  {search ? "No levels match your search" : "No levels found"}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
+
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        pageSize={pageSize}
+        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        totalItems={filtered.length}
+      />
 
       <Sheet open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
         <SheetContent className="sm:max-w-lg overflow-y-auto">

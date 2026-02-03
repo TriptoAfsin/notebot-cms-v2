@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "next-view-transitions";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -26,6 +26,8 @@ import {
 import { Plus, Pencil, ExternalLink } from "lucide-react";
 import { DeleteNoteButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
+import { TablePagination } from "@/components/table-pagination";
+import { useDebounce } from "@/hooks/use-debounce";
 import { SearchableSelect } from "@/components/searchable-select";
 import { updateNoteAction } from "@/actions/notes";
 import { toast } from "sonner";
@@ -38,6 +40,8 @@ type Note = {
   url: string;
   sortOrder: number;
   metadata: unknown;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type Topic = {
@@ -68,6 +72,9 @@ export function NotesTable({
   currentTopicId?: number;
 }) {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [editing, setEditing] = useState<Note | null>(null);
   const router = useRouter();
 
@@ -85,15 +92,20 @@ export function NotesTable({
   });
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return notes;
-    const q = search.toLowerCase();
+    if (!debouncedSearch.trim()) return notes;
+    const q = debouncedSearch.toLowerCase();
     return notes.filter(
       (n) =>
         n.title.toLowerCase().includes(q) ||
         n.topicName.toLowerCase().includes(q) ||
         n.url.toLowerCase().includes(q)
     );
-  }, [notes, search]);
+  }, [notes, debouncedSearch]);
+
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const topicOptions = topics.map((t) => ({
     value: String(t.id),
@@ -185,15 +197,17 @@ export function NotesTable({
               <TableHead>Title</TableHead>
               <TableHead className="w-64">URL</TableHead>
               <TableHead className="w-20">Order</TableHead>
+              <TableHead className="w-28">Created</TableHead>
+              <TableHead className="w-28">Updated</TableHead>
               <TableHead className="w-20">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((note) => (
+            {paginated.map((note) => (
               <TableRow key={note.id}>
                 <TableCell className="font-mono text-xs">{note.id}</TableCell>
                 <TableCell className="text-sm">{note.topicName}</TableCell>
-                <TableCell className="font-medium">{note.title}</TableCell>
+                <TableCell className="font-medium max-w-[200px] truncate" title={note.title}>{note.title}</TableCell>
                 <TableCell>
                   <a
                     href={note.url}
@@ -206,6 +220,8 @@ export function NotesTable({
                   </a>
                 </TableCell>
                 <TableCell>{note.sortOrder}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">{new Date(note.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">{new Date(note.updatedAt).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
                     <Button
@@ -220,9 +236,9 @@ export function NotesTable({
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {paginated.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   {search ? "No notes match your search" : "No notes found"}
                 </TableCell>
               </TableRow>
@@ -230,9 +246,14 @@ export function NotesTable({
           </TableBody>
         </Table>
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
-        {filtered.length} of {notes.length} notes
-      </p>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        pageSize={pageSize}
+        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        totalItems={filtered.length}
+      />
 
       <Sheet open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
         <SheetContent className="sm:max-w-lg overflow-y-auto">

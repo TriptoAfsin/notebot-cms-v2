@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "next-view-transitions";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -27,6 +27,8 @@ import {
 import { Plus, Pencil, ExternalLink } from "lucide-react";
 import { DeleteQuestionBankButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
+import { TablePagination } from "@/components/table-pagination";
+import { useDebounce } from "@/hooks/use-debounce";
 import { updateQuestionBankAction } from "@/actions/question-banks";
 import { toast } from "sonner";
 
@@ -70,6 +72,9 @@ export function QuestionBanksTable({
   currentLevelId?: number;
 }) {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [editing, setEditing] = useState<QuestionBank | null>(null);
   const router = useRouter();
 
@@ -78,15 +83,20 @@ export function QuestionBanksTable({
   });
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return questionBanks;
-    const q = search.toLowerCase();
+    if (!debouncedSearch.trim()) return questionBanks;
+    const q = debouncedSearch.toLowerCase();
     return questionBanks.filter(
       (qb) =>
         qb.title.toLowerCase().includes(q) ||
         qb.subjectSlug.toLowerCase().includes(q) ||
         qb.levelName.toLowerCase().includes(q)
     );
-  }, [questionBanks, search]);
+  }, [questionBanks, debouncedSearch]);
+
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const openEdit = (qb: QuestionBank) => {
     form.reset({
@@ -168,12 +178,12 @@ export function QuestionBanksTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((qb) => (
+            {paginated.map((qb) => (
               <TableRow key={qb.id}>
                 <TableCell className="font-mono text-xs">{qb.id}</TableCell>
                 <TableCell className="text-sm">{qb.levelName}</TableCell>
                 <TableCell>{qb.subjectSlug}</TableCell>
-                <TableCell className="font-medium">{qb.title}</TableCell>
+                <TableCell className="font-medium max-w-[200px] truncate" title={qb.title}>{qb.title}</TableCell>
                 <TableCell>
                   <a
                     href={qb.url}
@@ -195,7 +205,7 @@ export function QuestionBanksTable({
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {paginated.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   {search ? "No question banks match your search" : "No question banks found"}
@@ -205,9 +215,14 @@ export function QuestionBanksTable({
           </TableBody>
         </Table>
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
-        {filtered.length} of {questionBanks.length} question banks
-      </p>
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        pageSize={pageSize}
+        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+        totalItems={filtered.length}
+      />
 
       <Sheet open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
         <SheetContent className="sm:max-w-lg overflow-y-auto">
