@@ -66,3 +66,11 @@ export async function deleteRoutineAction(id: number) {
   revalidatePath("/routines");
   return { success: true };
 }
+
+export async function getRoutinesAction() {
+  return routineService.getRoutines();
+}
+
+export async function getRoutineByIdAction(id: number) {
+  return routineService.getRoutineById(id);
+}

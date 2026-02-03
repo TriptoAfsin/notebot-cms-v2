@@ -63,3 +63,11 @@ export async function deleteSubjectAction(id: number, levelId: number) {
   revalidatePath("/subjects");
   return { success: true };
 }
+
+export async function getSubjectsAction(levelId?: number) {
+  return subjectService.getSubjects(levelId);
+}
+
+export async function getSubjectByIdAction(id: number) {
+  return subjectService.getSubjectById(id);
+}

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getQuestionBankById } from "@/services/question-banks";
-import { getLevels } from "@/services/levels";
+import { getQuestionBankByIdAction } from "@/actions/question-banks";
+import { getLevelsAction } from "@/actions/levels";
 import { EditQuestionBankForm } from "./edit-form";
 
 export default async function EditQuestionBankPage({
@@ -10,8 +10,8 @@ export default async function EditQuestionBankPage({
 }) {
   const { id } = await params;
   const [questionBank, levels] = await Promise.all([
-    getQuestionBankById(parseInt(id)),
-    getLevels(),
+    getQuestionBankByIdAction(parseInt(id)),
+    getLevelsAction(),
   ]);
 
   if (!questionBank) {

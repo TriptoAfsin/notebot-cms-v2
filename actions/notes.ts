@@ -60,3 +60,11 @@ export async function deleteNoteAction(id: number, topicId: number) {
   revalidatePath("/notes");
   return { success: true };
 }
+
+export async function getNotesAction(topicId?: number) {
+  return noteService.getNotes(topicId);
+}
+
+export async function getNoteByIdAction(id: number) {
+  return noteService.getNoteById(id);
+}

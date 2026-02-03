@@ -1,5 +1,5 @@
-import { getTopics } from "@/services/topics";
-import { getSubjects } from "@/services/subjects";
+import { getTopicsAction } from "@/actions/topics";
+import { getSubjectsAction } from "@/actions/subjects";
 import { TopicsTable } from "./topics-table";
 
 export default async function TopicsPage({
@@ -11,8 +11,8 @@ export default async function TopicsPage({
   const subjectIdNum = subjectId ? parseInt(subjectId) : undefined;
 
   const [topics, subjects] = await Promise.all([
-    getTopics(subjectIdNum),
-    getSubjects(),
+    getTopicsAction(subjectIdNum),
+    getSubjectsAction(),
   ]);
 
   return <TopicsTable topics={topics} subjects={subjects} currentSubjectId={subjectIdNum} />;

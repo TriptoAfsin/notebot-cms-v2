@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getSubjectById } from "@/services/subjects";
-import { getLevels } from "@/services/levels";
+import { getSubjectByIdAction } from "@/actions/subjects";
+import { getLevelsAction } from "@/actions/levels";
 import { EditSubjectForm } from "./edit-form";
 
 export default async function EditSubjectPage({
@@ -10,8 +10,8 @@ export default async function EditSubjectPage({
 }) {
   const { id } = await params;
   const [subject, levels] = await Promise.all([
-    getSubjectById(parseInt(id)),
-    getLevels(),
+    getSubjectByIdAction(parseInt(id)),
+    getLevelsAction(),
   ]);
 
   if (!subject) {

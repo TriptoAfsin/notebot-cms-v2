@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getRoutineById } from "@/services/routines";
-import { getLevels } from "@/services/levels";
+import { getRoutineByIdAction } from "@/actions/routines";
+import { getLevelsAction } from "@/actions/levels";
 import { EditRoutineForm } from "./edit-form";
 
 export default async function EditRoutinePage({
@@ -10,8 +10,8 @@ export default async function EditRoutinePage({
 }) {
   const { id } = await params;
   const [routine, levels] = await Promise.all([
-    getRoutineById(parseInt(id)),
-    getLevels(),
+    getRoutineByIdAction(parseInt(id)),
+    getLevelsAction(),
   ]);
 
   if (!routine) {

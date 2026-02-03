@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getLevelById } from "@/services/levels";
+import { getLevelByIdAction } from "@/actions/levels";
 import { EditLevelForm } from "./edit-form";
 
 export default async function EditLevelPage({
@@ -8,7 +8,7 @@ export default async function EditLevelPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const level = await getLevelById(parseInt(id));
+  const level = await getLevelByIdAction(parseInt(id));
 
   if (!level) {
     notFound();

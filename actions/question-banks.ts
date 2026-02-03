@@ -63,3 +63,11 @@ export async function deleteQuestionBankAction(id: number, levelId: number) {
   revalidatePath("/question-banks");
   return { success: true };
 }
+
+export async function getQuestionBanksAction(levelId?: number) {
+  return qbService.getQuestionBanks(levelId);
+}
+
+export async function getQuestionBankByIdAction(id: number) {
+  return qbService.getQuestionBankById(id);
+}

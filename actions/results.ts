@@ -60,3 +60,11 @@ export async function deleteResultAction(id: number) {
   revalidatePath("/results");
   return { success: true };
 }
+
+export async function getResultsAction() {
+  return resultService.getResults();
+}
+
+export async function getResultByIdAction(id: number) {
+  return resultService.getResultById(id);
+}

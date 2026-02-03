@@ -1,5 +1,5 @@
-import { getQuestionBanks } from "@/services/question-banks";
-import { getLevels } from "@/services/levels";
+import { getQuestionBanksAction } from "@/actions/question-banks";
+import { getLevelsAction } from "@/actions/levels";
 import { QuestionBanksTable } from "./question-banks-table";
 
 export default async function QuestionBanksPage({
@@ -9,6 +9,6 @@ export default async function QuestionBanksPage({
 }) {
   const { levelId } = await searchParams;
   const parsedLevelId = levelId ? parseInt(levelId) : undefined;
-  const [questionBanks, levels] = await Promise.all([getQuestionBanks(parsedLevelId), getLevels()]);
+  const [questionBanks, levels] = await Promise.all([getQuestionBanksAction(parsedLevelId), getLevelsAction()]);
   return <QuestionBanksTable questionBanks={questionBanks} levels={levels} currentLevelId={parsedLevelId} />;
 }

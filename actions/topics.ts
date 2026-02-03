@@ -63,3 +63,11 @@ export async function deleteTopicAction(id: number, subjectId: number) {
   revalidatePath("/topics");
   return { success: true };
 }
+
+export async function getTopicsAction(subjectId?: number) {
+  return topicService.getTopics(subjectId);
+}
+
+export async function getTopicByIdAction(id: number) {
+  return topicService.getTopicById(id);
+}

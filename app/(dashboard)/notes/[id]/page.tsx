@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getNoteById } from "@/services/notes";
-import { getTopics } from "@/services/topics";
+import { getNoteByIdAction } from "@/actions/notes";
+import { getTopicsAction } from "@/actions/topics";
 import { EditNoteForm } from "./edit-form";
 
 export default async function EditNotePage({
@@ -10,8 +10,8 @@ export default async function EditNotePage({
 }) {
   const { id } = await params;
   const [note, topics] = await Promise.all([
-    getNoteById(parseInt(id)),
-    getTopics(),
+    getNoteByIdAction(parseInt(id)),
+    getTopicsAction(),
   ]);
 
   if (!note) {

@@ -1,8 +1,8 @@
-import { getLevels } from "@/services/levels";
+import { getLevelsAction } from "@/actions/levels";
 import { CreateRoutineForm } from "./create-form";
 
 export default async function NewRoutinePage() {
-  const levels = await getLevels();
+  const levels = await getLevelsAction();
 
   return (
     <div className="max-w-2xl">

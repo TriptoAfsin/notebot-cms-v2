@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getResultById } from "@/services/results";
+import { getResultByIdAction } from "@/actions/results";
 import { EditResultForm } from "./edit-form";
 
 export default async function EditResultPage({
@@ -8,7 +8,7 @@ export default async function EditResultPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const result = await getResultById(parseInt(id));
+  const result = await getResultByIdAction(parseInt(id));
 
   if (!result) {
     notFound();

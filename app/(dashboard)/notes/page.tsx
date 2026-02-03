@@ -1,5 +1,5 @@
-import { getNotes } from "@/services/notes";
-import { getTopics } from "@/services/topics";
+import { getNotesAction } from "@/actions/notes";
+import { getTopicsAction } from "@/actions/topics";
 import { NotesTable } from "./notes-table";
 
 export default async function NotesPage({
@@ -9,7 +9,7 @@ export default async function NotesPage({
 }) {
   const { topicId } = await searchParams;
   const parsedTopicId = topicId ? parseInt(topicId) : undefined;
-  const [notes, topics] = await Promise.all([getNotes(parsedTopicId), getTopics()]);
+  const [notes, topics] = await Promise.all([getNotesAction(parsedTopicId), getTopicsAction()]);
 
   return <NotesTable notes={notes} topics={topics} currentTopicId={parsedTopicId} />;
 }

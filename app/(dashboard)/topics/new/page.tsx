@@ -1,8 +1,8 @@
-import { getSubjects } from "@/services/subjects";
+import { getSubjectsAction } from "@/actions/subjects";
 import { NewTopicForm } from "./new-form";
 
 export default async function NewTopicPage() {
-  const subjects = await getSubjects();
+  const subjects = await getSubjectsAction();
 
   return (
     <div className="max-w-2xl">

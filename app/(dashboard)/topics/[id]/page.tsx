@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getTopicById } from "@/services/topics";
-import { getSubjects } from "@/services/subjects";
+import { getTopicByIdAction } from "@/actions/topics";
+import { getSubjectsAction } from "@/actions/subjects";
 import { EditTopicForm } from "./edit-form";
 
 export default async function EditTopicPage({
@@ -10,8 +10,8 @@ export default async function EditTopicPage({
 }) {
   const { id } = await params;
   const [topic, subjects] = await Promise.all([
-    getTopicById(parseInt(id)),
-    getSubjects(),
+    getTopicByIdAction(parseInt(id)),
+    getSubjectsAction(),
   ]);
 
   if (!topic) {

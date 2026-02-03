@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getLabReportById } from "@/services/lab-reports";
-import { getLevels } from "@/services/levels";
+import { getLabReportByIdAction } from "@/actions/lab-reports";
+import { getLevelsAction } from "@/actions/levels";
 import { EditLabReportForm } from "./edit-form";
 
 export default async function EditLabReportPage({
@@ -10,8 +10,8 @@ export default async function EditLabReportPage({
 }) {
   const { id } = await params;
   const [labReport, levels] = await Promise.all([
-    getLabReportById(parseInt(id)),
-    getLevels(),
+    getLabReportByIdAction(parseInt(id)),
+    getLevelsAction(),
   ]);
 
   if (!labReport) {

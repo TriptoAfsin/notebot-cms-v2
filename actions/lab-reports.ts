@@ -66,3 +66,11 @@ export async function deleteLabReportAction(id: number, levelId: number) {
   revalidatePath("/lab-reports");
   return { success: true };
 }
+
+export async function getLabReportsAction(levelId?: number) {
+  return labReportService.getLabReports(levelId);
+}
+
+export async function getLabReportByIdAction(id: number) {
+  return labReportService.getLabReportById(id);
+}

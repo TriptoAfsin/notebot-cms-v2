@@ -1,8 +1,8 @@
-import { getTopics } from "@/services/topics";
+import { getTopicsAction } from "@/actions/topics";
 import { CreateNoteForm } from "./create-form";
 
 export default async function NewNotePage() {
-  const topics = await getTopics();
+  const topics = await getTopicsAction();
 
   return (
     <div className="max-w-2xl">

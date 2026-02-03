@@ -60,3 +60,11 @@ export async function deleteLevelAction(id: number) {
   revalidatePath("/levels");
   return { success: true };
 }
+
+export async function getLevelsAction() {
+  return levelService.getLevels();
+}
+
+export async function getLevelByIdAction(id: number) {
+  return levelService.getLevelById(id);
+}

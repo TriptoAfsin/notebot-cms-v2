@@ -1,12 +1,12 @@
 import { Link } from "next-view-transitions";
-import { getResults } from "@/services/results";
+import { getResultsAction } from "@/actions/results";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil, ExternalLink } from "lucide-react";
 import { DeleteResultButton } from "./delete-button";
 
 export default async function ResultsPage() {
-  const results = await getResults();
+  const results = await getResultsAction();
 
   return (
     <div>
