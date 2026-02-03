@@ -17,8 +17,42 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NoteBot CMS",
-  description: "Content management system for NoteBot",
+  title: {
+    default: "NoteBot CMS",
+    template: "%s | NoteBot CMS",
+  },
+  description:
+    "Content management system for NoteBot - manage notes, lab reports, question banks, routines, and results for students.",
+  keywords: [
+    "NoteBot",
+    "CMS",
+    "notes",
+    "education",
+    "lab reports",
+    "question banks",
+  ],
+  authors: [{ name: "NoteBot Team" }],
+  openGraph: {
+    title: "NoteBot CMS",
+    description:
+      "Content management system for NoteBot - manage educational content for students.",
+    siteName: "NoteBot CMS",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary",
+    title: "NoteBot CMS",
+    description:
+      "Content management system for NoteBot - manage educational content for students.",
+  },
+  icons: {
+    icon: "/icon.svg",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({

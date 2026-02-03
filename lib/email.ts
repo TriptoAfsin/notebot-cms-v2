@@ -68,6 +68,51 @@ export async function sendSubmissionAcknowledgement({
   });
 }
 
+export async function sendNewSubmissionNotification({
+  to,
+  name,
+  batch,
+  department,
+  level,
+  subjectName,
+  topicName,
+  noteLink,
+  contactInfo,
+}: {
+  to: string;
+  name: string;
+  batch: string;
+  department: string;
+  level: string;
+  subjectName: string;
+  topicName: string;
+  noteLink: string;
+  contactInfo: string;
+}) {
+  return resend.emails.send({
+    from: fromEmail,
+    to,
+    subject: `New Note Submission from ${name}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto;">
+        <h2 style="color: #45a243;">New Note Submission</h2>
+        <p>A new note has been submitted and is awaiting review.</p>
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+          <tr><td style="padding: 8px 0; color: #666; width: 120px;">Name</td><td style="padding: 8px 0; font-weight: 600;">${name}</td></tr>
+          <tr><td style="padding: 8px 0; color: #666;">Batch</td><td style="padding: 8px 0;">${batch}</td></tr>
+          <tr><td style="padding: 8px 0; color: #666;">Department</td><td style="padding: 8px 0;">${department}</td></tr>
+          <tr><td style="padding: 8px 0; color: #666;">Level</td><td style="padding: 8px 0;">${level}</td></tr>
+          <tr><td style="padding: 8px 0; color: #666;">Subject</td><td style="padding: 8px 0; font-weight: 600;">${subjectName}</td></tr>
+          <tr><td style="padding: 8px 0; color: #666;">Topic</td><td style="padding: 8px 0; font-weight: 600;">${topicName}</td></tr>
+          <tr><td style="padding: 8px 0; color: #666;">Note Link</td><td style="padding: 8px 0;"><a href="${noteLink}" style="color: #45a243;">${noteLink}</a></td></tr>
+          <tr><td style="padding: 8px 0; color: #666;">Contact</td><td style="padding: 8px 0;">${contactInfo}</td></tr>
+        </table>
+        <p style="color: #666; font-size: 13px;">Log in to the CMS to review this submission.</p>
+      </div>
+    `,
+  });
+}
+
 export async function sendSubmissionReviewNotification({
   to,
   name,

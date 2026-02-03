@@ -6,9 +6,8 @@ import { createTopicAction } from "@/actions/topics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/searchable-select";
 import { toast } from "sonner";
 
 type Subject = {
@@ -20,8 +19,30 @@ export function NewTopicForm({ subjects }: { subjects: Subject[] }) {
   const router = useRouter();
   const [subjectId, setSubjectId] = useState("");
 
+  const subjectOptions = subjects.map((s) => ({
+    value: String(s.id),
+    label: s.displayName,
+  }));
+
   const handleSubmit = async (formData: FormData) => {
     formData.set("subjectId", subjectId);
+
+    // Build metadata JSON from individual fields
+    const metadata: Record<string, string | number> = {};
+    const author = formData.get("author") as string;
+    const year = formData.get("year") as string;
+    const department = formData.get("department") as string;
+    if (author) metadata.author = author;
+    if (year) metadata.year = parseInt(year);
+    if (department) metadata.department = department;
+
+    formData.delete("author");
+    formData.delete("year");
+    formData.delete("department");
+    if (Object.keys(metadata).length > 0) {
+      formData.set("metadata", JSON.stringify(metadata));
+    }
+
     const result = await createTopicAction(formData);
     if (result.success) {
       toast.success("Topic created");
@@ -40,18 +61,13 @@ export function NewTopicForm({ subjects }: { subjects: Subject[] }) {
         <form action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="subjectId">Subject</Label>
-            <Select value={subjectId} onValueChange={setSubjectId} required>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a subject" />
-              </SelectTrigger>
-              <SelectContent>
-                {subjects.map((subject) => (
-                  <SelectItem key={subject.id} value={subject.id.toString()}>
-                    {subject.displayName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={subjectOptions}
+              value={subjectId}
+              onValueChange={setSubjectId}
+              placeholder="Select a subject"
+              searchPlaceholder="Search subjects..."
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
@@ -66,13 +82,16 @@ export function NewTopicForm({ subjects }: { subjects: Subject[] }) {
             <Input id="slug" name="slug" placeholder="topic-name" required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="metadata">Metadata (JSON)</Label>
-            <Textarea
-              id="metadata"
-              name="metadata"
-              placeholder='{"author": "Name", "year": 2024, "department": "CSE"}'
-              rows={3}
-            />
+            <Label htmlFor="author">Author</Label>
+            <Input id="author" name="author" placeholder="Author name" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="year">Year</Label>
+            <Input id="year" name="year" type="number" placeholder="2024" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="department">Department</Label>
+            <Input id="department" name="department" placeholder="CSE, EEE, etc." />
           </div>
           <div className="space-y-2">
             <Label htmlFor="sortOrder">Sort Order</Label>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,6 +96,7 @@ function SubmissionsContent() {
           ))}
         </div>
       ) : (
+        <div className="rounded-lg border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -144,6 +145,7 @@ function SubmissionsContent() {
             )}
           </TableBody>
         </Table>
+        </div>
       )}
     </div>
   );

@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import * as submissionService from "@/services/note-submissions";
-import { sendSubmissionAcknowledgement, sendSubmissionReviewNotification } from "@/lib/email";
+import { sendSubmissionAcknowledgement, sendSubmissionReviewNotification, sendNewSubmissionNotification } from "@/lib/email";
 
 async function getSession() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -56,6 +56,15 @@ export async function createSubmission(formData: FormData) {
       subjectName: parsed.data.subjectName,
       topicName: parsed.data.topicName,
       trackUrl: `${baseUrl}/submit/track`,
+    }).catch(() => {});
+  }
+
+  // Notify admin via CONTACT_TO_EMAIL
+  const contactTo = process.env.CONTACT_TO_EMAIL;
+  if (contactTo) {
+    await sendNewSubmissionNotification({
+      to: contactTo,
+      ...parsed.data,
     }).catch(() => {});
   }
 

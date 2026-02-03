@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
@@ -19,30 +19,39 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: Home },
-  { href: "/levels", label: "Levels", icon: Layers },
-  { href: "/subjects", label: "Subjects", icon: GraduationCap },
-  { href: "/topics", label: "Topics", icon: BookOpen },
-  { href: "/notes", label: "Notes", icon: FileText },
-  { href: "/lab-reports", label: "Lab Reports", icon: FlaskConical },
-  { href: "/question-banks", label: "Question Banks", icon: HelpCircle },
-  { href: "/routines", label: "Routines", icon: Calendar },
-  { href: "/results", label: "Results", icon: BarChart3 },
-  { href: "/users", label: "Users", icon: Users },
-  { href: "/invitations", label: "Invitations", icon: Mail },
-  { href: "/submissions", label: "Submissions", icon: FileInput },
+  { href: "/", label: "Dashboard", icon: Home, color: "text-blue-500" },
+  { href: "/levels", label: "Levels", icon: Layers, color: "text-violet-500" },
+  { href: "/subjects", label: "Subjects", icon: GraduationCap, color: "text-amber-500" },
+  { href: "/topics", label: "Topics", icon: BookOpen, color: "text-emerald-500" },
+  { href: "/notes", label: "Notes", icon: FileText, color: "text-sky-500" },
+  { href: "/lab-reports", label: "Lab Reports", icon: FlaskConical, color: "text-pink-500" },
+  { href: "/question-banks", label: "Question Banks", icon: HelpCircle, color: "text-orange-500" },
+  { href: "/routines", label: "Routines", icon: Calendar, color: "text-teal-500" },
+  { href: "/results", label: "Results", icon: BarChart3, color: "text-indigo-500" },
+  { href: "/users", label: "Users", icon: Users, color: "text-cyan-500" },
+  { href: "/invitations", label: "Invitations", icon: Mail, color: "text-rose-500" },
+  { href: "/submissions", label: "Submissions", icon: FileInput, color: "text-lime-500" },
 ];
 
-export function AppSidebar() {
+export { navItems };
+
+export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 border-r bg-sidebar pattern-dots min-h-screen p-4 flex flex-col">
-      <div className="mb-8">
-        <h1 className="text-xl font-bold text-primary">NoteBot CMS</h1>
-        <p className="text-xs text-muted-foreground">Content Management</p>
+    <>
+      <div className="mb-6 px-3">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+            <FileText className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-base font-bold">NoteBot CMS</h1>
+            <p className="text-[10px] text-muted-foreground leading-none">Content Management</p>
+          </div>
+        </div>
       </div>
-      <nav className="space-y-1 flex-1">
+      <nav className="space-y-0.5 flex-1 px-2">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -51,19 +60,28 @@ export function AppSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className={cn("h-4 w-4", isActive ? "text-primary-foreground" : item.color)} />
               {item.label}
             </Link>
           );
         })}
       </nav>
+    </>
+  );
+}
+
+export function AppSidebar() {
+  return (
+    <aside className="w-60 border-r bg-card min-h-screen py-4 flex flex-col">
+      <SidebarContent />
     </aside>
   );
 }
