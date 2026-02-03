@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { getInvitations } from "@/actions/invitations";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,19 +27,19 @@ function StatusBadge({ status }: { status: string }) {
   switch (status) {
     case "used":
       return (
-        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400">
           Used
         </Badge>
       );
     case "expired":
       return (
-        <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+        <Badge className="bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400">
           Expired
         </Badge>
       );
     default:
       return (
-        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+        <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400">
           Active
         </Badge>
       );
@@ -52,7 +52,7 @@ export default async function InvitationsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">Invitations</h1>
         <Link href="/invitations/new">
           <Button>
@@ -62,70 +62,76 @@ export default async function InvitationsPage() {
         </Link>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Token</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Expires</TableHead>
-            <TableHead className="w-32">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {invitations.map(
-            (inv: {
-              id: number;
-              token: string;
-              email: string | null;
-              role: string;
-              usedBy: string | null;
-              expiresAt: Date;
-              createdAt: Date;
-            }) => {
-              const status = getStatus(inv);
-              return (
-                <TableRow key={inv.id}>
-                  <TableCell className="font-mono text-xs">
-                    {inv.token.slice(0, 8)}...
-                  </TableCell>
-                  <TableCell>{inv.email || "-"}</TableCell>
-                  <TableCell className="capitalize">{inv.role}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={status} />
-                  </TableCell>
-                  <TableCell>
-                    {new Date(inv.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(inv.expiresAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {status === "active" && (
-                        <CopyLinkButton token={inv.token} />
-                      )}
-                      <DeleteInvitationButton id={inv.id} />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            }
-          )}
-          {invitations.length === 0 && (
+      <div className="rounded-lg border overflow-x-auto">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell
-                colSpan={7}
-                className="text-center text-muted-foreground"
-              >
-                No invitations found
-              </TableCell>
+              <TableHead>Token</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead className="w-24">Role</TableHead>
+              <TableHead className="w-24">Status</TableHead>
+              <TableHead className="w-28">Created</TableHead>
+              <TableHead className="w-28">Expires</TableHead>
+              <TableHead className="w-24">Actions</TableHead>
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {invitations.map(
+              (inv: {
+                id: number;
+                token: string;
+                email: string | null;
+                role: string;
+                usedBy: string | null;
+                expiresAt: Date;
+                createdAt: Date;
+              }) => {
+                const status = getStatus(inv);
+                return (
+                  <TableRow key={inv.id}>
+                    <TableCell className="font-mono text-xs">
+                      {inv.token.slice(0, 8)}...
+                    </TableCell>
+                    <TableCell className="text-sm">{inv.email || "-"}</TableCell>
+                    <TableCell>
+                      <Badge variant={inv.role === "admin" ? "default" : "secondary"} className="capitalize">
+                        {inv.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={status} />
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {new Date(inv.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {new Date(inv.expiresAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        {status === "active" && (
+                          <CopyLinkButton token={inv.token} />
+                        )}
+                        <DeleteInvitationButton id={inv.id} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              }
+            )}
+            {invitations.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="text-center text-muted-foreground py-8"
+                >
+                  No invitations found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { updateLevelAction } from "@/actions/levels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
@@ -49,15 +48,6 @@ export function EditLevelForm({ level }: { level: Level }) {
           <div className="space-y-2">
             <Label htmlFor="slug">Slug</Label>
             <Input id="slug" name="slug" defaultValue={level.slug} required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="metadata">Metadata (JSON)</Label>
-            <Textarea
-              id="metadata"
-              name="metadata"
-              defaultValue={level.metadata ? JSON.stringify(level.metadata, null, 2) : ""}
-              rows={3}
-            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="sortOrder">Sort Order</Label>

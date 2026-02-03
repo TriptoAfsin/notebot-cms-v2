@@ -27,7 +27,7 @@ export default function LoginPage() {
       if (result.error) {
         setError(result.error.message || "Invalid credentials");
       } else {
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch {
       setError("An error occurred. Please try again.");
@@ -37,19 +37,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 pattern-dots px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background pattern-dots px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-primary flex items-center justify-center mb-2">
-            <FileText className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mb-3 shadow-md">
+            <FileText className="h-7 w-7 text-white" />
           </div>
-          <CardTitle className="text-2xl">NoteBot CMS</CardTitle>
+          <CardTitle className="text-2xl tracking-tight">NoteBot CMS</CardTitle>
           <CardDescription>Sign in to manage content</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg border border-destructive/20">
                 {error}
               </div>
             )}

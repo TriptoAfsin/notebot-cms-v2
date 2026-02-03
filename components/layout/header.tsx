@@ -36,7 +36,7 @@ export function AppHeader() {
   };
 
   return (
-    <header className="border-b bg-card px-4 md:px-6 py-3 flex items-center justify-between">
+    <header className="border-b bg-card/60 backdrop-blur-sm px-4 md:px-6 py-3 flex items-center justify-between sticky top-0 z-30">
       {/* Mobile menu */}
       <div className="md:hidden">
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -57,12 +57,12 @@ export function AppHeader() {
       {/* Desktop spacer */}
       <div className="hidden md:block" />
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         <ThemeToggle />
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="text-muted-foreground">
-              <LogOut className="h-4 w-4 mr-2" />
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+              <LogOut className="h-4 w-4 mr-1.5" />
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </AlertDialogTrigger>
@@ -75,7 +75,7 @@ export function AppHeader() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleSignOut}>
+              <AlertDialogAction onClick={handleSignOut} className="bg-destructive text-white hover:bg-destructive/90">
                 Sign Out
               </AlertDialogAction>
             </AlertDialogFooter>

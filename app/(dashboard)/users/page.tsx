@@ -1,4 +1,5 @@
 import { getUsers } from "@/actions/users";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -15,49 +16,55 @@ export default async function UsersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">Users</h1>
         <p className="text-sm text-muted-foreground">
           Users are created through invitations
         </p>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead className="w-24">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users.map((user: { id: string; name: string; email: string; role: string; createdAt: string }) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell className="capitalize">{user.role}</TableCell>
-              <TableCell>
-                {new Date(user.createdAt).toLocaleDateString()}
-              </TableCell>
-              <TableCell>
-                <DeleteUserButton id={user.id} />
-              </TableCell>
-            </TableRow>
-          ))}
-          {users.length === 0 && (
+      <div className="rounded-lg border overflow-x-auto">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell
-                colSpan={5}
-                className="text-center text-muted-foreground"
-              >
-                No users found
-              </TableCell>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead className="w-24">Role</TableHead>
+              <TableHead className="w-32">Created</TableHead>
+              <TableHead className="w-20">Actions</TableHead>
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {users.map((user: { id: string; name: string; email: string; role: string; createdAt: string }) => (
+              <TableRow key={user.id}>
+                <TableCell className="font-medium">{user.name}</TableCell>
+                <TableCell className="text-sm">{user.email}</TableCell>
+                <TableCell>
+                  <Badge variant={user.role === "admin" ? "default" : "secondary"} className="capitalize">
+                    {user.role}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-sm">
+                  {new Date(user.createdAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <DeleteUserButton id={user.id} />
+                </TableCell>
+              </TableRow>
+            ))}
+            {users.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-center text-muted-foreground py-8"
+                >
+                  No users found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

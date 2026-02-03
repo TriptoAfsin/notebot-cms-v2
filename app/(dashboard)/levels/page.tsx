@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { getLevels } from "@/services/levels";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,48 +20,48 @@ export default async function LevelsPage() {
         </Link>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ID</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Display Name</TableHead>
-            <TableHead>Slug</TableHead>
-            <TableHead>Sort Order</TableHead>
-            <TableHead>Metadata</TableHead>
-            <TableHead className="w-24">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {levels.map((level) => (
-            <TableRow key={level.id}>
-              <TableCell>{level.id}</TableCell>
-              <TableCell>{level.name}</TableCell>
-              <TableCell>{level.displayName}</TableCell>
-              <TableCell>{level.slug}</TableCell>
-              <TableCell>{level.sortOrder}</TableCell>
-              <TableCell>{level.metadata ? JSON.stringify(level.metadata).slice(0, 50) + '...' : '-'}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Link href={`/levels/${level.id}`}>
-                    <Button variant="outline" size="icon-xs">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <DeleteLevelButton id={level.id} />
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {levels.length === 0 && (
+      <div className="rounded-lg border overflow-x-auto">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-muted-foreground">
-                No levels found
-              </TableCell>
+              <TableHead className="w-16">ID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Display Name</TableHead>
+              <TableHead>Slug</TableHead>
+              <TableHead className="w-20">Order</TableHead>
+              <TableHead className="w-20">Actions</TableHead>
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {levels.map((level) => (
+              <TableRow key={level.id}>
+                <TableCell className="font-mono text-xs">{level.id}</TableCell>
+                <TableCell className="font-medium">{level.name}</TableCell>
+                <TableCell>{level.displayName}</TableCell>
+                <TableCell className="font-mono text-xs">{level.slug}</TableCell>
+                <TableCell>{level.sortOrder}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1.5">
+                    <Link href={`/levels/${level.id}`}>
+                      <Button variant="outline" size="icon-xs">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </Link>
+                    <DeleteLevelButton id={level.id} />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {levels.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  No levels found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

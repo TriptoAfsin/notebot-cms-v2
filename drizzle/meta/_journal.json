@@ -8,6 +8,13 @@
       "when": 1770125963464,
       "tag": "0000_lonely_mantis",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770130227176,
+      "tag": "0001_last_christian_walker",
+      "breakpoints": true
     }
   ]
 }

@@ -8,3 +8,4 @@ export { routines } from "./routines";
 export { results } from "./results";
 export { invitations } from "./invitations";
 export { noteSubmissions } from "./note-submissions";
+export { appSettings } from "./app-settings";

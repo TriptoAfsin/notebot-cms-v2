@@ -1,19 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { updateNoteAction } from "@/actions/notes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/searchable-select";
 import { toast } from "sonner";
 
 type Note = {
@@ -33,8 +27,32 @@ type Topic = {
 
 export function EditNoteForm({ note, topics }: { note: Note; topics: Topic[] }) {
   const router = useRouter();
+  const [topicId, setTopicId] = useState(String(note.topicId));
+
+  const topicOptions = topics.map((t) => ({
+    value: String(t.id),
+    label: t.subjectName ? `${t.subjectName} → ${t.displayName}` : t.displayName,
+  }));
 
   const handleSubmit = async (formData: FormData) => {
+    formData.set("topicId", topicId);
+
+    // Build metadata JSON from individual fields
+    const metadata: Record<string, string | number> = {};
+    const author = formData.get("author") as string;
+    const year = formData.get("year") as string;
+    const department = formData.get("department") as string;
+    if (author) metadata.author = author;
+    if (year) metadata.year = parseInt(year);
+    if (department) metadata.department = department;
+
+    formData.delete("author");
+    formData.delete("year");
+    formData.delete("department");
+    if (Object.keys(metadata).length > 0) {
+      formData.set("metadata", JSON.stringify(metadata));
+    }
+
     const result = await updateNoteAction(note.id, formData);
     if (result.success) {
       toast.success("Note updated");
@@ -53,18 +71,13 @@ export function EditNoteForm({ note, topics }: { note: Note; topics: Topic[] }) 
         <form action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="topicId">Topic</Label>
-            <Select name="topicId" defaultValue={String(note.topicId)} required>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a topic" />
-              </SelectTrigger>
-              <SelectContent>
-                {topics.map((topic) => (
-                  <SelectItem key={topic.id} value={String(topic.id)}>
-                    {topic.subjectName ? `${topic.subjectName} → ${topic.displayName}` : topic.displayName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={topicOptions}
+              value={topicId}
+              onValueChange={setTopicId}
+              placeholder="Select a topic"
+              searchPlaceholder="Search topics..."
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
@@ -74,14 +87,35 @@ export function EditNoteForm({ note, topics }: { note: Note; topics: Topic[] }) 
             <Label htmlFor="url">URL</Label>
             <Input id="url" name="url" type="url" defaultValue={note.url} required />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="metadata">Metadata (JSON)</Label>
-            <Textarea
-              id="metadata"
-              name="metadata"
-              defaultValue={note.metadata ? JSON.stringify(note.metadata, null, 2) : ""}
-              rows={3}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="author">Author</Label>
+              <Input
+                id="author"
+                name="author"
+                placeholder="Author name"
+                defaultValue={(note.metadata?.author as string) || ""}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="year">Year</Label>
+              <Input
+                id="year"
+                name="year"
+                type="number"
+                placeholder="2024"
+                defaultValue={(note.metadata?.year as number) || ""}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="department">Department</Label>
+              <Input
+                id="department"
+                name="department"
+                placeholder="CSE, EEE, etc."
+                defaultValue={(note.metadata?.department as string) || ""}
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="sortOrder">Sort Order</Label>
