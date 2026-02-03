@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createSubmission } from "@/actions/note-submissions";
-import { FileText, CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 type SubmissionConfig = {
   batches: string[];
@@ -117,9 +117,7 @@ export function SubmitForm({ config }: { config: SubmissionConfig }) {
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-primary flex items-center justify-center mb-2">
-            <FileText className="h-6 w-6 text-primary-foreground" />
-          </div>
+          <img src="/notebot-logo.png" alt="NoteBot" width={72} height={72} className="mx-auto mb-2" />
           <CardTitle className="text-2xl">{config.formTitle}</CardTitle>
           <CardDescription>{config.formDescription}</CardDescription>
         </CardHeader>

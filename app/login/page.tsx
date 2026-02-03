@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,9 +39,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background pattern-dots px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center mb-3 shadow-md">
-            <FileText className="h-7 w-7 text-white" />
-          </div>
+          <img src="/notebot-logo.png" alt="NoteBot" width={56} height={56} className="mx-auto mb-3" />
           <CardTitle className="text-2xl tracking-tight">NoteBot CMS</CardTitle>
           <CardDescription>Sign in to manage content</CardDescription>
         </CardHeader>

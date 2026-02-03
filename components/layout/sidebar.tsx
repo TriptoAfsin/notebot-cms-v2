@@ -6,7 +6,6 @@ import {
   BookOpen,
   GraduationCap,
   Layers,
-  FileText,
   FlaskConical,
   HelpCircle,
   Calendar,
@@ -15,6 +14,7 @@ import {
   Users,
   Mail,
   FileInput,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,9 +42,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     <>
       <div className="mb-8 px-4">
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-sm">
-            <FileText className="h-4.5 w-4.5 text-white" />
-          </div>
+          <img src="/notebot-logo.png" alt="NoteBot" width={36} height={36} />
           <div>
             <h1 className="text-base font-bold tracking-tight">NoteBot</h1>
             <p className="text-[10px] text-muted-foreground leading-none">Content Manager</p>

@@ -37,21 +37,27 @@ export function AppHeader() {
 
   return (
     <header className="border-b bg-card/60 backdrop-blur-sm px-4 md:px-6 py-3 flex items-center justify-between sticky top-0 z-30">
-      {/* Mobile menu */}
-      <div className="md:hidden">
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon-sm">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0 pt-4">
-            <SheetHeader className="sr-only">
-              <SheetTitle>Navigation</SheetTitle>
-            </SheetHeader>
-            <SidebarContent onNavigate={() => setMobileOpen(false)} />
-          </SheetContent>
-        </Sheet>
+      {/* Mobile menu + logo */}
+      <div className="flex items-center gap-2">
+        <div className="md:hidden">
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon-sm">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0 pt-4">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Navigation</SheetTitle>
+              </SheetHeader>
+              <SidebarContent onNavigate={() => setMobileOpen(false)} />
+            </SheetContent>
+          </Sheet>
+        </div>
+        <div className="flex items-center gap-2 md:hidden">
+          <img src="/notebot-logo.png" alt="NoteBot" width={28} height={28} />
+          <span className="text-sm font-bold tracking-tight">NoteBot</span>
+        </div>
       </div>
 
       {/* Desktop spacer */}

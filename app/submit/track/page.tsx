@@ -86,6 +86,7 @@ export default function TrackPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-3xl">
         <CardHeader className="text-center">
+          <img src="/notebot-logo.png" alt="NoteBot" width={72} height={72} className="mx-auto mb-2" />
           <CardTitle className="text-2xl">Track Your Submissions</CardTitle>
           <CardDescription>
             Enter your email or Facebook link to see your submission status
