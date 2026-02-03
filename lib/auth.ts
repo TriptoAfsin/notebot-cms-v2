@@ -1,7 +1,11 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 
+const baseURL = (process.env.BETTER_AUTH_URL || "http://localhost:3000").replace(/\/+$/, "");
+
 export const auth = betterAuth({
+  baseURL,
+  trustedOrigins: [baseURL],
   database: new Pool({
     connectionString: process.env.DATABASE_PUBLIC_URL,
   }),

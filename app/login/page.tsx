@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,21 +19,18 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    await signIn.email({
+    const { error: signInError } = await signIn.email({
       email,
       password,
-      callbackURL: "/dashboard",
-      fetchOptions: {
-        onError: (ctx) => {
-          setError(ctx.error.message || "Invalid credentials");
-          setLoading(false);
-        },
-        onSuccess: () => {
-          router.push("/dashboard");
-          router.refresh();
-        },
-      },
     });
+
+    if (signInError) {
+      setError(signInError.message || "Invalid credentials");
+      setLoading(false);
+      return;
+    }
+
+    window.location.href = "/dashboard";
   };
 
   return (
