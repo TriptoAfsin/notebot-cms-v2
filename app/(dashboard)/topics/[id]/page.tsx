@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getTopicByIdAction } from "@/actions/topics";
-import { getSubjectsAction } from "@/actions/subjects";
+import { getTopicByIdAction } from "@/actions/topics.action";
+import { getSubjectsAction } from "@/actions/subjects.action";
 import { EditTopicForm } from "./edit-form";
 
 export default async function EditTopicPage({

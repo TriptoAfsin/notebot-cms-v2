@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { checkSuperAdminExists, createSuperAdmin } from "@/actions/setup";
+import { checkSuperAdminExists, createSuperAdmin } from "@/actions/setup.action";
 
 export default function SetupPage() {
   const router = useRouter();

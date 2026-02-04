@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { trackSubmissions } from "@/actions/note-submissions";
+import { trackSubmissions } from "@/actions/note-submissions.action";
 
 type Submission = {
   id: number;

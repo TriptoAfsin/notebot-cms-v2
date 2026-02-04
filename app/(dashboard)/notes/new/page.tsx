@@ -1,4 +1,4 @@
-import { getTopicsAction } from "@/actions/topics";
+import { getTopicsAction } from "@/actions/topics.action";
 import { CreateNoteForm } from "./create-form";
 
 export default async function NewNotePage() {

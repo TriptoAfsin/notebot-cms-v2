@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import * as routineService from "@/services/routines";
+import * as routineService from "@/services/routines.service";
 import { invalidateRoutinesCache } from "@/services/cache";
 
 const routineSchema = z.object({

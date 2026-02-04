@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getRoutineByIdAction } from "@/actions/routines";
-import { getLevelsAction } from "@/actions/levels";
+import { getRoutineByIdAction } from "@/actions/routines.action";
+import { getLevelsAction } from "@/actions/levels.action";
 import { EditRoutineForm } from "./edit-form";
 
 export default async function EditRoutinePage({

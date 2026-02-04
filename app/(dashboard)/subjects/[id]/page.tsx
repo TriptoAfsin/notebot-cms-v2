@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getSubjectByIdAction } from "@/actions/subjects";
-import { getLevelsAction } from "@/actions/levels";
+import { getSubjectByIdAction } from "@/actions/subjects.action";
+import { getLevelsAction } from "@/actions/levels.action";
 import { EditSubjectForm } from "./edit-form";
 
 export default async function EditSubjectPage({

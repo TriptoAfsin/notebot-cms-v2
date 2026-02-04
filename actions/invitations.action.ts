@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { hashPassword } from "better-auth/crypto";
-import * as invitationService from "@/services/invitations";
+import * as invitationService from "@/services/invitations.service";
 import { sendInvitationEmail } from "@/lib/email";
 import { Pool } from "pg";
 import crypto from "crypto";

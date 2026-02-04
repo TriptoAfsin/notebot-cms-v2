@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { updateSubmissionConfig } from "@/actions/app-settings";
+import { updateSubmissionConfig } from "@/actions/app-settings.action";
 import { toast } from "sonner";
 import { X, Plus, ArrowLeft } from "lucide-react";
 import { Link } from "next-view-transitions";

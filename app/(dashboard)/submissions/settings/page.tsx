@@ -1,4 +1,4 @@
-import { getSubmissionConfig } from "@/actions/app-settings";
+import { getSubmissionConfig } from "@/actions/app-settings.action";
 import { SubmissionSettingsForm } from "./settings-form";
 
 export default async function SubmissionSettingsPage() {

@@ -1,5 +1,5 @@
-import { getRoutinesAction } from "@/actions/routines";
-import { getLevelsAction } from "@/actions/levels";
+import { getRoutinesAction } from "@/actions/routines.action";
+import { getLevelsAction } from "@/actions/levels.action";
 import { RoutinesTable } from "./routines-table";
 
 export default async function RoutinesPage() {

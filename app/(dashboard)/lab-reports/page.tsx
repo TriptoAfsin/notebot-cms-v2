@@ -1,5 +1,5 @@
-import { getLabReportsAction } from "@/actions/lab-reports";
-import { getLevelsAction } from "@/actions/levels";
+import { getLabReportsAction } from "@/actions/lab-reports.action";
+import { getLevelsAction } from "@/actions/levels.action";
 import { LabReportsTable } from "./lab-reports-table";
 
 export default async function LabReportsPage({

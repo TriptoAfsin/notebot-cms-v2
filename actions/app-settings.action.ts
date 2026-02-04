@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import * as settingsService from "@/services/app-settings";
+import * as settingsService from "@/services/app-settings.service";
 
 async function getSession() {
   return auth.api.getSession({ headers: await headers() });

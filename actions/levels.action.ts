@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import * as levelService from "@/services/levels";
+import * as levelService from "@/services/levels.service";
 import { invalidateLevelsCache } from "@/services/cache";
 
 const levelSchema = z.object({

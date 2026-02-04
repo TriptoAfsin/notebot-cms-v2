@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import * as noteService from "@/services/notes";
+import * as noteService from "@/services/notes.service";
 import { invalidateNotesCache } from "@/services/cache";
 
 const noteSchema = z.object({

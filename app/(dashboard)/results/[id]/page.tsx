@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getResultByIdAction } from "@/actions/results";
+import { getResultByIdAction } from "@/actions/results.action";
 import { EditResultForm } from "./edit-form";
 
 export default async function EditResultPage({

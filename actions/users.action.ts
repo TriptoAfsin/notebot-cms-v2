@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import * as userService from "@/services/users";
+import * as userService from "@/services/users.service";
 
 async function getSession() {
   const session = await auth.api.getSession({ headers: await headers() });

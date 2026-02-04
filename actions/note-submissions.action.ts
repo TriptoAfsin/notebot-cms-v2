@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import * as submissionService from "@/services/note-submissions";
+import * as submissionService from "@/services/note-submissions.service";
 import { sendSubmissionAcknowledgement, sendSubmissionReviewNotification, sendNewSubmissionNotification } from "@/lib/email";
 
 async function getSession() {

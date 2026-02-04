@@ -1,5 +1,5 @@
-import { getQuestionBanksAction } from "@/actions/question-banks";
-import { getLevelsAction } from "@/actions/levels";
+import { getQuestionBanksAction } from "@/actions/question-banks.action";
+import { getLevelsAction } from "@/actions/levels.action";
 import { QuestionBanksTable } from "./question-banks-table";
 
 export default async function QuestionBanksPage({

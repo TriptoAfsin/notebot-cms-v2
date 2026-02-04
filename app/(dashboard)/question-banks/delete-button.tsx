@@ -1,7 +1,7 @@
 "use client";
 
 import { DeleteDialog } from "@/components/delete-dialog";
-import { deleteQuestionBankAction } from "@/actions/question-banks";
+import { deleteQuestionBankAction } from "@/actions/question-banks.action";
 
 export function DeleteQuestionBankButton({ id, levelId }: { id: number; levelId: number }) {
   return (

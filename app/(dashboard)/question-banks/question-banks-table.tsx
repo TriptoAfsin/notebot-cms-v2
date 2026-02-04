@@ -29,7 +29,7 @@ import { DeleteQuestionBankButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
 import { TablePagination } from "@/components/table-pagination";
 import { useDebounce } from "@/hooks/use-debounce";
-import { updateQuestionBankAction } from "@/actions/question-banks";
+import { updateQuestionBankAction } from "@/actions/question-banks.action";
 import { toast } from "sonner";
 
 const editSchema = z.object({

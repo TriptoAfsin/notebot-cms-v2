@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createQuestionBankAction } from "@/actions/question-banks";
+import { createQuestionBankAction } from "@/actions/question-banks.action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

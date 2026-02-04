@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import * as topicService from "@/services/topics";
+import * as topicService from "@/services/topics.service";
 import { invalidateTopicsCache } from "@/services/cache";
 
 const topicSchema = z.object({

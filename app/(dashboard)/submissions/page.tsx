@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getSubmissions } from "@/actions/note-submissions";
+import { getSubmissions } from "@/actions/note-submissions.action";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { ExternalLink, Copy, Settings, Check } from "lucide-react";
 import { SearchInput } from "@/components/search-input";

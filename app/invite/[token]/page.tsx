@@ -16,7 +16,7 @@ import {
 import {
   validateInvitation,
   registerWithInvitation,
-} from "@/actions/invitations";
+} from "@/actions/invitations.action";
 
 export default function InvitePage() {
   const router = useRouter();

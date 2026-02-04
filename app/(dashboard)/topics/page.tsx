@@ -1,5 +1,5 @@
-import { getTopicsAction } from "@/actions/topics";
-import { getSubjectsAction } from "@/actions/subjects";
+import { getTopicsAction } from "@/actions/topics.action";
+import { getSubjectsAction } from "@/actions/subjects.action";
 import { TopicsTable } from "./topics-table";
 
 export default async function TopicsPage({

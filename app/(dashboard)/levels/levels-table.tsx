@@ -20,7 +20,7 @@ import { DeleteLevelButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
 import { TablePagination } from "@/components/table-pagination";
 import { useDebounce } from "@/hooks/use-debounce";
-import { updateLevelAction } from "@/actions/levels";
+import { updateLevelAction } from "@/actions/levels.action";
 import { toast } from "sonner";
 
 const editSchema = z.object({

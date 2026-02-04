@@ -1,7 +1,7 @@
 "use client";
 
 import { DeleteDialog } from "@/components/delete-dialog";
-import { deleteRoutineAction } from "@/actions/routines";
+import { deleteRoutineAction } from "@/actions/routines.action";
 
 export function DeleteRoutineButton({ id }: { id: number }) {
   return (

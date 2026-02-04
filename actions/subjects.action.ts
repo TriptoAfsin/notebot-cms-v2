@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import * as subjectService from "@/services/subjects";
+import * as subjectService from "@/services/subjects.service";
 import { invalidateSubjectsCache } from "@/services/cache";
 
 const subjectSchema = z.object({

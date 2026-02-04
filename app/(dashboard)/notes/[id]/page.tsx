@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getNoteByIdAction } from "@/actions/notes";
-import { getTopicsAction } from "@/actions/topics";
+import { getNoteByIdAction } from "@/actions/notes.action";
+import { getTopicsAction } from "@/actions/topics.action";
 import { EditNoteForm } from "./edit-form";
 
 export default async function EditNotePage({

@@ -1,5 +1,5 @@
-import { getSubjectsAction } from "@/actions/subjects";
-import { getLevelsAction } from "@/actions/levels";
+import { getSubjectsAction } from "@/actions/subjects.action";
+import { getLevelsAction } from "@/actions/levels.action";
 import { SubjectsTable } from "./subjects-table";
 
 export default async function SubjectsPage({

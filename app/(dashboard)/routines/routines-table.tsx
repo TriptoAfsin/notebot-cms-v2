@@ -29,7 +29,7 @@ import { DeleteRoutineButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
 import { TablePagination } from "@/components/table-pagination";
 import { useDebounce } from "@/hooks/use-debounce";
-import { updateRoutineAction } from "@/actions/routines";
+import { updateRoutineAction } from "@/actions/routines.action";
 import { toast } from "sonner";
 
 const editSchema = z.object({

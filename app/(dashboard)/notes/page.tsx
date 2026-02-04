@@ -1,5 +1,5 @@
-import { getNotesAction } from "@/actions/notes";
-import { getTopicsAction } from "@/actions/topics";
+import { getNotesAction } from "@/actions/notes.action";
+import { getTopicsAction } from "@/actions/topics.action";
 import { NotesTable } from "./notes-table";
 
 export default async function NotesPage({

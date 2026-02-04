@@ -29,7 +29,7 @@ import { SearchInput } from "@/components/search-input";
 import { TablePagination } from "@/components/table-pagination";
 import { useDebounce } from "@/hooks/use-debounce";
 import { SearchableSelect } from "@/components/searchable-select";
-import { updateNoteAction } from "@/actions/notes";
+import { updateNoteAction } from "@/actions/notes.action";
 import { toast } from "sonner";
 
 type Note = {

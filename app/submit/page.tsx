@@ -1,4 +1,4 @@
-import { getSubmissionConfig } from "@/actions/app-settings";
+import { getSubmissionConfig } from "@/actions/app-settings.action";
 import { SubmitForm } from "./submit-form";
 
 export const dynamic = "force-dynamic";

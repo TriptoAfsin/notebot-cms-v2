@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import * as resultService from "@/services/results";
+import * as resultService from "@/services/results.service";
 import { invalidateResultsCache } from "@/services/cache";
 
 const resultSchema = z.object({

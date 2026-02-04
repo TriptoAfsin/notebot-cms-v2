@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getSubmissions, reviewSubmission, deleteSubmission } from "@/actions/note-submissions";
+import { getSubmissions, reviewSubmission, deleteSubmission } from "@/actions/note-submissions.action";
 import { toast } from "sonner";
 
 type Submission = {

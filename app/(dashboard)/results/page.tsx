@@ -1,5 +1,5 @@
 import { Link } from "next-view-transitions";
-import { getResultsAction } from "@/actions/results";
+import { getResultsAction } from "@/actions/results.action";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil, ExternalLink } from "lucide-react";

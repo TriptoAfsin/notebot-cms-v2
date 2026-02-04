@@ -1,4 +1,4 @@
-import { getLevelsAction } from "@/actions/levels";
+import { getLevelsAction } from "@/actions/levels.action";
 import { CreateQuestionBankForm } from "./create-form";
 
 export default async function NewQuestionBankPage() {

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getLevelByIdAction } from "@/actions/levels";
+import { getLevelByIdAction } from "@/actions/levels.action";
 import { EditLevelForm } from "./edit-form";
 
 export default async function EditLevelPage({

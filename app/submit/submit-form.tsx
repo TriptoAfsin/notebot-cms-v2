@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createSubmission } from "@/actions/note-submissions";
+import { createSubmission } from "@/actions/note-submissions.action";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 type SubmissionConfig = {

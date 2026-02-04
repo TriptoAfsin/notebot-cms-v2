@@ -21,7 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createInvitation } from "@/actions/invitations";
+import { createInvitation } from "@/actions/invitations.action";
 import { toast } from "sonner";
 
 const schema = z.object({

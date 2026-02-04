@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getLabReportByIdAction } from "@/actions/lab-reports";
-import { getLevelsAction } from "@/actions/levels";
+import { getLabReportByIdAction } from "@/actions/lab-reports.action";
+import { getLevelsAction } from "@/actions/levels.action";
 import { EditLabReportForm } from "./edit-form";
 
 export default async function EditLabReportPage({

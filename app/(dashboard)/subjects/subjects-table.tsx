@@ -26,7 +26,7 @@ import { DeleteSubjectButton } from "./delete-button";
 import { SearchInput } from "@/components/search-input";
 import { TablePagination } from "@/components/table-pagination";
 import { useDebounce } from "@/hooks/use-debounce";
-import { updateSubjectAction } from "@/actions/subjects";
+import { updateSubjectAction } from "@/actions/subjects.action";
 import { toast } from "sonner";
 
 const editSchema = z.object({

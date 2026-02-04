@@ -1,4 +1,4 @@
-import { getUsers } from "@/actions/users";
+import { getUsers } from "@/actions/users.action";
 import { UsersTable } from "./users-table";
 
 export default async function UsersPage() {

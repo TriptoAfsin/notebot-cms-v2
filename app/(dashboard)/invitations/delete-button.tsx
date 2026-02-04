@@ -1,7 +1,7 @@
 "use client";
 
 import { DeleteDialog } from "@/components/delete-dialog";
-import { deleteInvitation } from "@/actions/invitations";
+import { deleteInvitation } from "@/actions/invitations.action";
 
 export function DeleteInvitationButton({ id }: { id: number }) {
   return (

@@ -1,4 +1,4 @@
-import { getSubjectsAction } from "@/actions/subjects";
+import { getSubjectsAction } from "@/actions/subjects.action";
 import { NewTopicForm } from "./new-form";
 
 export default async function NewTopicPage() {

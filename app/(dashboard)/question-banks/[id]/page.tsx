@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { getQuestionBankByIdAction } from "@/actions/question-banks";
-import { getLevelsAction } from "@/actions/levels";
+import { getQuestionBankByIdAction } from "@/actions/question-banks.action";
+import { getLevelsAction } from "@/actions/levels.action";
 import { EditQuestionBankForm } from "./edit-form";
 
 export default async function EditQuestionBankPage({
