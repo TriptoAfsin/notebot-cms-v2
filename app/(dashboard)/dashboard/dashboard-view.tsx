@@ -104,7 +104,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
             <CardTitle className="text-base font-semibold">Notes per Level</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-64 min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.notesPerLevel} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -131,7 +131,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
             <CardTitle className="text-base font-semibold">Content Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-64 min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.contentBreakdown} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -165,7 +165,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
             <CardTitle className="text-base font-semibold">Submission Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-64 min-w-0">
               {data.submissionStatus.every((s) => s.value === 0) ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                   No submissions yet
@@ -208,7 +208,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
             <CardTitle className="text-base font-semibold">Submissions by Department</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-64 min-w-0">
               {data.deptData.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                   No submissions yet
