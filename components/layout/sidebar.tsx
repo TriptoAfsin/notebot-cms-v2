@@ -15,6 +15,7 @@ import {
   Mail,
   FileInput,
   FileText,
+  ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ const navItems = [
   { href: "/lab-reports", label: "Lab Reports", icon: FlaskConical, color: "text-pink-500" },
   { href: "/question-banks", label: "Question Banks", icon: HelpCircle, color: "text-orange-500" },
   { href: "/routines", label: "Routines", icon: Calendar, color: "text-teal-500" },
+  { href: "/syllabuses", label: "Syllabuses", icon: ScrollText, color: "text-fuchsia-500" },
   // { href: "/results", label: "Results", icon: BarChart3, color: "text-indigo-500" },
   { href: "/users", label: "Users", icon: Users, color: "text-cyan-500" },
   { href: "/invitations", label: "Invitations", icon: Mail, color: "text-rose-500" },
