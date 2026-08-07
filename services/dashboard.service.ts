@@ -7,6 +7,7 @@ import {
   labReports,
   questionBanks,
   routines,
+  syllabuses,
   noteSubmissions,
 } from "@/lib/db/schema";
 import { eq, count } from "drizzle-orm";
@@ -20,6 +21,7 @@ export async function getDashboardData() {
     labReportRows,
     questionBankRows,
     routineRows,
+    syllabusRows,
     submissionRows,
   ] = await Promise.all([
     db.select().from(levels),
@@ -29,6 +31,7 @@ export async function getDashboardData() {
     db.select().from(labReports),
     db.select().from(questionBanks),
     db.select().from(routines),
+    db.select().from(syllabuses),
     db.select().from(noteSubmissions),
   ]);
 
@@ -90,6 +93,7 @@ export async function getDashboardData() {
     { name: "Lab Reports", count: labReportRows.length },
     { name: "Q. Banks", count: questionBankRows.length },
     { name: "Routines", count: routineRows.length },
+    { name: "Syllabuses", count: syllabusRows.length },
   ];
 
   return {
@@ -101,6 +105,7 @@ export async function getDashboardData() {
       labReports: labReportRows.length,
       questionBanks: questionBankRows.length,
       routines: routineRows.length,
+      syllabuses: syllabusRows.length,
       submissions: submissionRows.length,
     },
     notesPerLevel: notesPerLevel.map((r) => ({

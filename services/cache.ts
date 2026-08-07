@@ -31,3 +31,9 @@ export async function invalidateResultsCache() {
 export async function invalidateQBsCache(levelId: number) {
   await invalidateCache(`qbs:${levelId}`);
 }
+
+// the engine caches syllabus:batches, syllabus:depts:<batch> and syllabus:topics:<batch>:<dept>
+// — a single edit can change the batch list, the dept list and a topic list, so clear them all
+export async function invalidateSyllabusCache() {
+  await invalidateCachePattern("syllabus:*");
+}
