@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as labReportService from "@/services/lab-reports.service";
 import { invalidateLabsCache } from "@/services/cache";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { logAudit, auditable } from "@/lib/audit";
 
 const labReportSchema = z.object({
   levelId: z.coerce.number().int(),
@@ -35,7 +36,9 @@ export async function createLabReportAction(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await labReportService.createLabReport(parsed.data);
+  const created = await labReportService.createLabReport(parsed.data);
+
+  await logAudit({ action: "create", entityType: "lab_report", entityId: created?.id, entityLabel: created?.title, after: auditable(created) });
   await invalidateLabsCache(parsed.data.levelId);
   revalidatePath("/lab-reports");
   return { success: true };
@@ -57,7 +60,11 @@ export async function updateLabReportAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await labReportService.updateLabReport(id, parsed.data);
+  const prev = await labReportService.getLabReportById(id);
+
+  const updated = await labReportService.updateLabReport(id, parsed.data);
+
+  await logAudit({ action: "update", entityType: "lab_report", entityId: id, entityLabel: updated?.title ?? prev?.title, before: auditable(prev), after: auditable(updated) });
   await invalidateLabsCache(parsed.data.levelId);
   revalidatePath("/lab-reports");
   return { success: true };
@@ -65,7 +72,9 @@ export async function updateLabReportAction(id: number, formData: FormData) {
 
 export async function deleteLabReportAction(id: number, levelId: number) {
   if (!(await requireUser())) return UNAUTHORIZED;
+  const removed = await labReportService.getLabReportById(id);
   await labReportService.deleteLabReport(id);
+  await logAudit({ action: "delete", entityType: "lab_report", entityId: id, entityLabel: removed?.title, before: auditable(removed) });
   await invalidateLabsCache(levelId);
   revalidatePath("/lab-reports");
   return { success: true };

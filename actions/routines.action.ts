@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as routineService from "@/services/routines.service";
 import { invalidateRoutinesCache } from "@/services/cache";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { logAudit, auditable } from "@/lib/audit";
 
 const routineSchema = z.object({
   levelId: z.coerce.number().int(),
@@ -35,7 +36,9 @@ export async function createRoutineAction(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await routineService.createRoutine(parsed.data);
+  const created = await routineService.createRoutine(parsed.data);
+
+  await logAudit({ action: "create", entityType: "routine", entityId: created?.id, entityLabel: created?.title, after: auditable(created) });
   await invalidateRoutinesCache();
   revalidatePath("/routines");
   return { success: true };
@@ -57,7 +60,11 @@ export async function updateRoutineAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await routineService.updateRoutine(id, parsed.data);
+  const prev = await routineService.getRoutineById(id);
+
+  const updated = await routineService.updateRoutine(id, parsed.data);
+
+  await logAudit({ action: "update", entityType: "routine", entityId: id, entityLabel: updated?.title ?? prev?.title, before: auditable(prev), after: auditable(updated) });
   await invalidateRoutinesCache();
   revalidatePath("/routines");
   return { success: true };
@@ -65,7 +72,9 @@ export async function updateRoutineAction(id: number, formData: FormData) {
 
 export async function deleteRoutineAction(id: number) {
   if (!(await requireUser())) return UNAUTHORIZED;
+  const removed = await routineService.getRoutineById(id);
   await routineService.deleteRoutine(id);
+  await logAudit({ action: "delete", entityType: "routine", entityId: id, entityLabel: removed?.title, before: auditable(removed) });
   await invalidateRoutinesCache();
   revalidatePath("/routines");
   return { success: true };

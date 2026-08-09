@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as subjectService from "@/services/subjects.service";
 import { invalidateSubjectsCache } from "@/services/cache";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { logAudit, auditable } from "@/lib/audit";
 
 const subjectSchema = z.object({
   levelId: z.coerce.number().int(),
@@ -33,7 +34,9 @@ export async function createSubjectAction(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await subjectService.createSubject(parsed.data);
+  const created = await subjectService.createSubject(parsed.data);
+
+  await logAudit({ action: "create", entityType: "subject", entityId: created?.id, entityLabel: created?.displayName, after: auditable(created) });
   await invalidateSubjectsCache(parsed.data.levelId);
   revalidatePath("/subjects");
   return { success: true };
@@ -59,7 +62,9 @@ export async function updateSubjectAction(id: number, formData: FormData) {
   // after it has left.
   const before = await subjectService.getSubjectById(id);
 
-  await subjectService.updateSubject(id, parsed.data);
+  const updated = await subjectService.updateSubject(id, parsed.data);
+
+  await logAudit({ action: "update", entityType: "subject", entityId: id, entityLabel: updated?.displayName ?? before?.displayName, before: auditable(before), after: auditable(updated) });
   await invalidateSubjectsCache(parsed.data.levelId);
   if (before && before.levelId !== parsed.data.levelId) {
     await invalidateSubjectsCache(before.levelId);
@@ -70,7 +75,9 @@ export async function updateSubjectAction(id: number, formData: FormData) {
 
 export async function deleteSubjectAction(id: number, levelId: number) {
   if (!(await requireUser())) return UNAUTHORIZED;
+  const removed = await subjectService.getSubjectById(id);
   await subjectService.deleteSubject(id);
+  await logAudit({ action: "delete", entityType: "subject", entityId: id, entityLabel: removed?.displayName, before: auditable(removed) });
   await invalidateSubjectsCache(levelId);
   revalidatePath("/subjects");
   return { success: true };

@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as levelService from "@/services/levels.service";
 import { invalidateLevelsCache } from "@/services/cache";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { logAudit, auditable } from "@/lib/audit";
 
 const levelSchema = z.object({
   name: z.string().min(1).max(50),
@@ -31,7 +32,9 @@ export async function createLevelAction(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await levelService.createLevel(parsed.data);
+  const created = await levelService.createLevel(parsed.data);
+
+  await logAudit({ action: "create", entityType: "level", entityId: created?.id, entityLabel: created?.displayName, after: auditable(created) });
   await invalidateLevelsCache();
   revalidatePath("/levels");
   return { success: true };
@@ -51,7 +54,11 @@ export async function updateLevelAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await levelService.updateLevel(id, parsed.data);
+  const prev = await levelService.getLevelById(id);
+
+  const updated = await levelService.updateLevel(id, parsed.data);
+
+  await logAudit({ action: "update", entityType: "level", entityId: id, entityLabel: updated?.displayName ?? prev?.displayName, before: auditable(prev), after: auditable(updated) });
   await invalidateLevelsCache();
   revalidatePath("/levels");
   return { success: true };
@@ -59,7 +66,9 @@ export async function updateLevelAction(id: number, formData: FormData) {
 
 export async function deleteLevelAction(id: number) {
   if (!(await requireUser())) return UNAUTHORIZED;
+  const removed = await levelService.getLevelById(id);
   await levelService.deleteLevel(id);
+  await logAudit({ action: "delete", entityType: "level", entityId: id, entityLabel: removed?.displayName, before: auditable(removed) });
   await invalidateLevelsCache();
   revalidatePath("/levels");
   return { success: true };

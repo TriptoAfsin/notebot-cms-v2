@@ -16,6 +16,7 @@ import {
   FileInput,
   FileText,
   FilePlus2,
+  History,
   ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,7 @@ const navItems = [
   { href: "/users", label: "Users", icon: Users, color: "text-cyan-500" },
   { href: "/invitations", label: "Invitations", icon: Mail, color: "text-rose-500" },
   { href: "/submissions", label: "Submissions", icon: FileInput, color: "text-lime-600" },
+  { href: "/audit", label: "Audit Log", icon: History, color: "text-slate-500" },
 ];
 
 export { navItems };

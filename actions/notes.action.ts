@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as noteService from "@/services/notes.service";
 import { invalidateNotesCache } from "@/services/cache";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { logAudit, auditable } from "@/lib/audit";
 
 const noteSchema = z.object({
   topicId: z.coerce.number().int(),
@@ -31,7 +32,9 @@ export async function createNoteAction(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await noteService.createNote(parsed.data);
+  const created = await noteService.createNote(parsed.data);
+
+  await logAudit({ action: "create", entityType: "note", entityId: created?.id, entityLabel: created?.title, after: auditable(created) });
   await invalidateNotesCache(parsed.data.topicId);
   revalidatePath("/notes");
   return { success: true };
@@ -51,10 +54,13 @@ export async function updateNoteAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  // moving a note to another topic must also bust the topic it left
+  // one read serves both purposes: the audit "before" snapshot, and detecting a move so the
+  // topic the note left also gets its cache busted
   const before = await noteService.getNoteById(id);
 
-  await noteService.updateNote(id, parsed.data);
+  const updated = await noteService.updateNote(id, parsed.data);
+
+  await logAudit({ action: "update", entityType: "note", entityId: id, entityLabel: updated?.title ?? before?.title, before: auditable(before), after: auditable(updated) });
   await invalidateNotesCache(parsed.data.topicId);
   if (before && before.topicId !== parsed.data.topicId) {
     await invalidateNotesCache(before.topicId);
@@ -65,7 +71,9 @@ export async function updateNoteAction(id: number, formData: FormData) {
 
 export async function deleteNoteAction(id: number, topicId: number) {
   if (!(await requireUser())) return UNAUTHORIZED;
+  const removed = await noteService.getNoteById(id);
   await noteService.deleteNote(id);
+  await logAudit({ action: "delete", entityType: "note", entityId: id, entityLabel: removed?.title, before: auditable(removed) });
   await invalidateNotesCache(topicId);
   revalidatePath("/notes");
   return { success: true };

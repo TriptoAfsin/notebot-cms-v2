@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { levels, notes, subjects, topics } from "@/lib/db/schema";
+import { logAudit } from "@/lib/audit";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
 import { invalidateNotesCache, invalidateSubjectsCache, invalidateTopicsCache } from "@/services/cache";
 
@@ -154,6 +155,17 @@ export async function createContentAction(formData: FormData) {
 
       return { subjectId, topicId, noteId: note.id, createdSubject, createdTopic, directLink: false, subjectSlug, subjectDisplay, levelSlug: level.slug };
     });
+
+    // one entry per row created, so the trail matches what the per-entity forms record
+    if (result.createdSubject) {
+      await logAudit({ action: "create", entityType: "subject", entityId: result.subjectId, entityLabel: result.subjectDisplay, after: { levelId: d.levelId, displayName: d.subjectName, slug: d.subjectSlug } });
+    }
+    if (result.createdTopic) {
+      await logAudit({ action: "create", entityType: "topic", entityId: result.topicId, entityLabel: result.directLink ? d.title : d.topicName, after: { subjectId: result.subjectId, displayName: result.directLink ? d.title : d.topicName, directUrl: result.directLink ? d.url : undefined } });
+    }
+    if (result.noteId) {
+      await logAudit({ action: "create", entityType: "note", entityId: result.noteId, entityLabel: d.title, after: { topicId: result.topicId, title: d.title, url: d.url } });
+    }
 
     // invalidate only what actually changed; the engine reads these exact keys
     if (result.createdSubject) await invalidateSubjectsCache(d.levelId);

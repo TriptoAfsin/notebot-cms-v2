@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as syllabusService from "@/services/syllabuses.service";
 import { invalidateSyllabusCache } from "@/services/cache";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { logAudit, auditable } from "@/lib/audit";
 
 const syllabusSchema = z.object({
   batch: z.string().min(1).max(20),
@@ -40,7 +41,9 @@ export async function createSyllabusAction(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await syllabusService.createSyllabus(parsed.data);
+  const created = await syllabusService.createSyllabus(parsed.data);
+
+  await logAudit({ action: "create", entityType: "syllabus", entityId: created?.id, entityLabel: created?.topic, after: auditable(created) });
   await invalidateSyllabusCache();
   revalidatePath("/syllabuses");
   return { success: true };
@@ -54,7 +57,11 @@ export async function updateSyllabusAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await syllabusService.updateSyllabus(id, parsed.data);
+  const prev = await syllabusService.getSyllabusById(id);
+
+  const updated = await syllabusService.updateSyllabus(id, parsed.data);
+
+  await logAudit({ action: "update", entityType: "syllabus", entityId: id, entityLabel: updated?.topic ?? prev?.topic, before: auditable(prev), after: auditable(updated) });
   await invalidateSyllabusCache();
   revalidatePath("/syllabuses");
   return { success: true };
@@ -62,7 +69,9 @@ export async function updateSyllabusAction(id: number, formData: FormData) {
 
 export async function deleteSyllabusAction(id: number) {
   if (!(await requireUser())) return UNAUTHORIZED;
+  const removed = await syllabusService.getSyllabusById(id);
   await syllabusService.deleteSyllabus(id);
+  await logAudit({ action: "delete", entityType: "syllabus", entityId: id, entityLabel: removed?.topic, before: auditable(removed) });
   await invalidateSyllabusCache();
   revalidatePath("/syllabuses");
   return { success: true };

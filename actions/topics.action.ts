@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as topicService from "@/services/topics.service";
 import { invalidateTopicsCache } from "@/services/cache";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { logAudit, auditable } from "@/lib/audit";
 
 const topicSchema = z.object({
   subjectId: z.coerce.number().int(),
@@ -33,7 +34,9 @@ export async function createTopicAction(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await topicService.createTopic(parsed.data);
+  const created = await topicService.createTopic(parsed.data);
+
+  await logAudit({ action: "create", entityType: "topic", entityId: created?.id, entityLabel: created?.displayName, after: auditable(created) });
   await invalidateTopicsCache(parsed.data.subjectId);
   revalidatePath("/topics");
   return { success: true };
@@ -54,10 +57,13 @@ export async function updateTopicAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  // moving a topic to another subject must also bust the subject it left
+  // one read serves both purposes: the audit "before" snapshot, and detecting a move so the
+  // subject the topic left also gets its cache busted
   const before = await topicService.getTopicById(id);
 
-  await topicService.updateTopic(id, parsed.data);
+  const updated = await topicService.updateTopic(id, parsed.data);
+
+  await logAudit({ action: "update", entityType: "topic", entityId: id, entityLabel: updated?.displayName ?? before?.displayName, before: auditable(before), after: auditable(updated) });
   await invalidateTopicsCache(parsed.data.subjectId);
   if (before && before.subjectId !== parsed.data.subjectId) {
     await invalidateTopicsCache(before.subjectId);
@@ -68,7 +74,9 @@ export async function updateTopicAction(id: number, formData: FormData) {
 
 export async function deleteTopicAction(id: number, subjectId: number) {
   if (!(await requireUser())) return UNAUTHORIZED;
+  const removed = await topicService.getTopicById(id);
   await topicService.deleteTopic(id);
+  await logAudit({ action: "delete", entityType: "topic", entityId: id, entityLabel: removed?.displayName, before: auditable(removed) });
   await invalidateTopicsCache(subjectId);
   revalidatePath("/topics");
   return { success: true };

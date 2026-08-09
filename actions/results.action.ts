@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as resultService from "@/services/results.service";
 import { invalidateResultsCache } from "@/services/cache";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { logAudit, auditable } from "@/lib/audit";
 
 const resultSchema = z.object({
   title: z.string().min(1).max(500),
@@ -31,7 +32,9 @@ export async function createResultAction(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await resultService.createResult(parsed.data);
+  const created = await resultService.createResult(parsed.data);
+
+  await logAudit({ action: "create", entityType: "result", entityId: created?.id, entityLabel: created?.title, after: auditable(created) });
   await invalidateResultsCache();
   revalidatePath("/results");
   return { success: true };
@@ -51,7 +54,11 @@ export async function updateResultAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await resultService.updateResult(id, parsed.data);
+  const prev = await resultService.getResultById(id);
+
+  const updated = await resultService.updateResult(id, parsed.data);
+
+  await logAudit({ action: "update", entityType: "result", entityId: id, entityLabel: updated?.title ?? prev?.title, before: auditable(prev), after: auditable(updated) });
   await invalidateResultsCache();
   revalidatePath("/results");
   return { success: true };
@@ -59,7 +66,9 @@ export async function updateResultAction(id: number, formData: FormData) {
 
 export async function deleteResultAction(id: number) {
   if (!(await requireUser())) return UNAUTHORIZED;
+  const removed = await resultService.getResultById(id);
   await resultService.deleteResult(id);
+  await logAudit({ action: "delete", entityType: "result", entityId: id, entityLabel: removed?.title, before: auditable(removed) });
   await invalidateResultsCache();
   revalidatePath("/results");
   return { success: true };

@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as qbService from "@/services/question-banks.service";
 import { invalidateQBsCache } from "@/services/cache";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { logAudit, auditable } from "@/lib/audit";
 
 const qbSchema = z.object({
   levelId: z.coerce.number().int(),
@@ -33,7 +34,9 @@ export async function createQuestionBankAction(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await qbService.createQuestionBank(parsed.data);
+  const created = await qbService.createQuestionBank(parsed.data);
+
+  await logAudit({ action: "create", entityType: "question_bank", entityId: created?.id, entityLabel: created?.title, after: auditable(created) });
   await invalidateQBsCache(parsed.data.levelId);
   revalidatePath("/question-banks");
   return { success: true };
@@ -54,7 +57,11 @@ export async function updateQuestionBankAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await qbService.updateQuestionBank(id, parsed.data);
+  const prev = await qbService.getQuestionBankById(id);
+
+  const updated = await qbService.updateQuestionBank(id, parsed.data);
+
+  await logAudit({ action: "update", entityType: "question_bank", entityId: id, entityLabel: updated?.title ?? prev?.title, before: auditable(prev), after: auditable(updated) });
   await invalidateQBsCache(parsed.data.levelId);
   revalidatePath("/question-banks");
   return { success: true };
@@ -62,7 +69,9 @@ export async function updateQuestionBankAction(id: number, formData: FormData) {
 
 export async function deleteQuestionBankAction(id: number, levelId: number) {
   if (!(await requireUser())) return UNAUTHORIZED;
+  const removed = await qbService.getQuestionBankById(id);
   await qbService.deleteQuestionBank(id);
+  await logAudit({ action: "delete", entityType: "question_bank", entityId: id, entityLabel: removed?.title, before: auditable(removed) });
   await invalidateQBsCache(levelId);
   revalidatePath("/question-banks");
   return { success: true };
