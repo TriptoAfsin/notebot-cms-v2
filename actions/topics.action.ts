@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as topicService from "@/services/topics.service";
 import { invalidateTopicsCache } from "@/services/cache";
+import { requireUser, UNAUTHORIZED } from "@/lib/session";
 
 const topicSchema = z.object({
   subjectId: z.coerce.number().int(),
@@ -18,6 +19,7 @@ const topicSchema = z.object({
 });
 
 export async function createTopicAction(formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = topicSchema.safeParse({
     subjectId: formData.get("subjectId"),
     name: formData.get("name"),
@@ -38,6 +40,7 @@ export async function createTopicAction(formData: FormData) {
 }
 
 export async function updateTopicAction(id: number, formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = topicSchema.safeParse({
     subjectId: formData.get("subjectId"),
     name: formData.get("name"),
@@ -51,13 +54,20 @@ export async function updateTopicAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
+  // moving a topic to another subject must also bust the subject it left
+  const before = await topicService.getTopicById(id);
+
   await topicService.updateTopic(id, parsed.data);
   await invalidateTopicsCache(parsed.data.subjectId);
+  if (before && before.subjectId !== parsed.data.subjectId) {
+    await invalidateTopicsCache(before.subjectId);
+  }
   revalidatePath("/topics");
   return { success: true };
 }
 
 export async function deleteTopicAction(id: number, subjectId: number) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   await topicService.deleteTopic(id);
   await invalidateTopicsCache(subjectId);
   revalidatePath("/topics");

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as resultService from "@/services/results.service";
 import { invalidateResultsCache } from "@/services/cache";
+import { requireUser, UNAUTHORIZED } from "@/lib/session";
 
 const resultSchema = z.object({
   title: z.string().min(1).max(500),
@@ -17,6 +18,7 @@ const resultSchema = z.object({
 });
 
 export async function createResultAction(formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = resultSchema.safeParse({
     title: formData.get("title"),
     url: formData.get("url"),
@@ -36,6 +38,7 @@ export async function createResultAction(formData: FormData) {
 }
 
 export async function updateResultAction(id: number, formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = resultSchema.safeParse({
     title: formData.get("title"),
     url: formData.get("url"),
@@ -55,6 +58,7 @@ export async function updateResultAction(id: number, formData: FormData) {
 }
 
 export async function deleteResultAction(id: number) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   await resultService.deleteResult(id);
   await invalidateResultsCache();
   revalidatePath("/results");

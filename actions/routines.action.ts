@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as routineService from "@/services/routines.service";
 import { invalidateRoutinesCache } from "@/services/cache";
+import { requireUser, UNAUTHORIZED } from "@/lib/session";
 
 const routineSchema = z.object({
   levelId: z.coerce.number().int(),
@@ -19,6 +20,7 @@ const routineSchema = z.object({
 });
 
 export async function createRoutineAction(formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = routineSchema.safeParse({
     levelId: formData.get("levelId"),
     term: formData.get("term") || undefined,
@@ -40,6 +42,7 @@ export async function createRoutineAction(formData: FormData) {
 }
 
 export async function updateRoutineAction(id: number, formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = routineSchema.safeParse({
     levelId: formData.get("levelId"),
     term: formData.get("term") || undefined,
@@ -61,6 +64,7 @@ export async function updateRoutineAction(id: number, formData: FormData) {
 }
 
 export async function deleteRoutineAction(id: number) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   await routineService.deleteRoutine(id);
   await invalidateRoutinesCache();
   revalidatePath("/routines");

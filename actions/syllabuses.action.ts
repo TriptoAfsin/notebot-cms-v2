@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as syllabusService from "@/services/syllabuses.service";
 import { invalidateSyllabusCache } from "@/services/cache";
+import { requireUser, UNAUTHORIZED } from "@/lib/session";
 
 const syllabusSchema = z.object({
   batch: z.string().min(1).max(20),
@@ -32,6 +33,7 @@ const readForm = (formData: FormData) => ({
 });
 
 export async function createSyllabusAction(formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = syllabusSchema.safeParse(readForm(formData));
 
   if (!parsed.success) {
@@ -45,6 +47,7 @@ export async function createSyllabusAction(formData: FormData) {
 }
 
 export async function updateSyllabusAction(id: number, formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = syllabusSchema.safeParse(readForm(formData));
 
   if (!parsed.success) {
@@ -58,6 +61,7 @@ export async function updateSyllabusAction(id: number, formData: FormData) {
 }
 
 export async function deleteSyllabusAction(id: number) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   await syllabusService.deleteSyllabus(id);
   await invalidateSyllabusCache();
   revalidatePath("/syllabuses");

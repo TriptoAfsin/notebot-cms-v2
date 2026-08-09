@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as qbService from "@/services/question-banks.service";
 import { invalidateQBsCache } from "@/services/cache";
+import { requireUser, UNAUTHORIZED } from "@/lib/session";
 
 const qbSchema = z.object({
   levelId: z.coerce.number().int(),
@@ -18,6 +19,7 @@ const qbSchema = z.object({
 });
 
 export async function createQuestionBankAction(formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = qbSchema.safeParse({
     levelId: formData.get("levelId"),
     subjectSlug: formData.get("subjectSlug"),
@@ -38,6 +40,7 @@ export async function createQuestionBankAction(formData: FormData) {
 }
 
 export async function updateQuestionBankAction(id: number, formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = qbSchema.safeParse({
     levelId: formData.get("levelId"),
     subjectSlug: formData.get("subjectSlug"),
@@ -58,6 +61,7 @@ export async function updateQuestionBankAction(id: number, formData: FormData) {
 }
 
 export async function deleteQuestionBankAction(id: number, levelId: number) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   await qbService.deleteQuestionBank(id);
   await invalidateQBsCache(levelId);
   revalidatePath("/question-banks");

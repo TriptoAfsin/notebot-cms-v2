@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as labReportService from "@/services/lab-reports.service";
 import { invalidateLabsCache } from "@/services/cache";
+import { requireUser, UNAUTHORIZED } from "@/lib/session";
 
 const labReportSchema = z.object({
   levelId: z.coerce.number().int(),
@@ -19,6 +20,7 @@ const labReportSchema = z.object({
 });
 
 export async function createLabReportAction(formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = labReportSchema.safeParse({
     levelId: formData.get("levelId"),
     subjectSlug: formData.get("subjectSlug"),
@@ -40,6 +42,7 @@ export async function createLabReportAction(formData: FormData) {
 }
 
 export async function updateLabReportAction(id: number, formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = labReportSchema.safeParse({
     levelId: formData.get("levelId"),
     subjectSlug: formData.get("subjectSlug"),
@@ -61,6 +64,7 @@ export async function updateLabReportAction(id: number, formData: FormData) {
 }
 
 export async function deleteLabReportAction(id: number, levelId: number) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   await labReportService.deleteLabReport(id);
   await invalidateLabsCache(levelId);
   revalidatePath("/lab-reports");

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as levelService from "@/services/levels.service";
 import { invalidateLevelsCache } from "@/services/cache";
+import { requireUser, UNAUTHORIZED } from "@/lib/session";
 
 const levelSchema = z.object({
   name: z.string().min(1).max(50),
@@ -17,6 +18,7 @@ const levelSchema = z.object({
 });
 
 export async function createLevelAction(formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = levelSchema.safeParse({
     name: formData.get("name"),
     displayName: formData.get("displayName"),
@@ -36,6 +38,7 @@ export async function createLevelAction(formData: FormData) {
 }
 
 export async function updateLevelAction(id: number, formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = levelSchema.safeParse({
     name: formData.get("name"),
     displayName: formData.get("displayName"),
@@ -55,6 +58,7 @@ export async function updateLevelAction(id: number, formData: FormData) {
 }
 
 export async function deleteLevelAction(id: number) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   await levelService.deleteLevel(id);
   await invalidateLevelsCache();
   revalidatePath("/levels");

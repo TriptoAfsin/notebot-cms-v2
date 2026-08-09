@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as noteService from "@/services/notes.service";
 import { invalidateNotesCache } from "@/services/cache";
+import { requireUser, UNAUTHORIZED } from "@/lib/session";
 
 const noteSchema = z.object({
   topicId: z.coerce.number().int(),
@@ -17,6 +18,7 @@ const noteSchema = z.object({
 });
 
 export async function createNoteAction(formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = noteSchema.safeParse({
     topicId: formData.get("topicId"),
     title: formData.get("title"),
@@ -36,6 +38,7 @@ export async function createNoteAction(formData: FormData) {
 }
 
 export async function updateNoteAction(id: number, formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = noteSchema.safeParse({
     topicId: formData.get("topicId"),
     title: formData.get("title"),
@@ -48,13 +51,20 @@ export async function updateNoteAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
+  // moving a note to another topic must also bust the topic it left
+  const before = await noteService.getNoteById(id);
+
   await noteService.updateNote(id, parsed.data);
   await invalidateNotesCache(parsed.data.topicId);
+  if (before && before.topicId !== parsed.data.topicId) {
+    await invalidateNotesCache(before.topicId);
+  }
   revalidatePath("/notes");
   return { success: true };
 }
 
 export async function deleteNoteAction(id: number, topicId: number) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   await noteService.deleteNote(id);
   await invalidateNotesCache(topicId);
   revalidatePath("/notes");

@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * Routing convenience only — NOT an authorization boundary.
+ *
+ * This checks that a session cookie is *present*; it does not validate it. That is deliberate:
+ * validating means a DB round-trip on every request, and better-auth's session lookup is not
+ * edge-safe. Anyone can forge the cookie's presence, and server actions are POST endpoints that
+ * do not pass through here at all.
+ *
+ * Real enforcement lives in the actions via `requireUser()` from lib/session.ts. If you add a
+ * mutating action, guard it there — do not assume this file protects it.
+ */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 

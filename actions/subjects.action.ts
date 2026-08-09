@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import * as subjectService from "@/services/subjects.service";
 import { invalidateSubjectsCache } from "@/services/cache";
+import { requireUser, UNAUTHORIZED } from "@/lib/session";
 
 const subjectSchema = z.object({
   levelId: z.coerce.number().int(),
@@ -18,6 +19,7 @@ const subjectSchema = z.object({
 });
 
 export async function createSubjectAction(formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = subjectSchema.safeParse({
     levelId: formData.get("levelId"),
     name: formData.get("name"),
@@ -38,6 +40,7 @@ export async function createSubjectAction(formData: FormData) {
 }
 
 export async function updateSubjectAction(id: number, formData: FormData) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   const parsed = subjectSchema.safeParse({
     levelId: formData.get("levelId"),
     name: formData.get("name"),
@@ -51,13 +54,22 @@ export async function updateSubjectAction(id: number, formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
+  // Read the current level BEFORE the write: moving a subject to another level has to bust the
+  // OLD level's cache too, or notebot:subjects:<oldLevelId> serves the subject for up to an hour
+  // after it has left.
+  const before = await subjectService.getSubjectById(id);
+
   await subjectService.updateSubject(id, parsed.data);
   await invalidateSubjectsCache(parsed.data.levelId);
+  if (before && before.levelId !== parsed.data.levelId) {
+    await invalidateSubjectsCache(before.levelId);
+  }
   revalidatePath("/subjects");
   return { success: true };
 }
 
 export async function deleteSubjectAction(id: number, levelId: number) {
+  if (!(await requireUser())) return UNAUTHORIZED;
   await subjectService.deleteSubject(id);
   await invalidateSubjectsCache(levelId);
   revalidatePath("/subjects");
