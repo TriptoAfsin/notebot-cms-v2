@@ -16,6 +16,9 @@ export function SearchableSelect({
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   name,
+  disabled = false,
+  invalid = false,
+  emptyMessage = "No results found",
 }: {
   options: Option[];
   value: string;
@@ -23,6 +26,11 @@ export function SearchableSelect({
   placeholder?: string;
   searchPlaceholder?: string;
   name?: string;
+  /** cascading pickers need to lock a step until its parent is chosen */
+  disabled?: boolean;
+  /** mirrors the error ring the plain inputs get, so a missed pick is visible */
+  invalid?: boolean;
+  emptyMessage?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -59,16 +67,22 @@ export function SearchableSelect({
       {name && <input type="hidden" name={name} value={value} />}
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        disabled={disabled}
+        // aria-invalid is not valid on role=button; the ring plus the field error carry it
+        data-invalid={invalid || undefined}
+        aria-expanded={open}
+        onClick={() => !disabled && setOpen(!open)}
         className={cn(
           "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer",
-          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          invalid && "border-destructive ring-1 ring-destructive/30",
           !value && "text-muted-foreground"
         )}
       >
         <span className="truncate">{selectedLabel || placeholder}</span>
         <div className="flex items-center gap-1">
-          {value && (
+          {value && !disabled && (
             <span
               role="button"
               onClick={(e) => {
@@ -100,7 +114,7 @@ export function SearchableSelect({
           <div className="max-h-60 overflow-y-auto p-1">
             {filtered.length === 0 && (
               <div className="py-6 text-center text-sm text-muted-foreground">
-                No results found
+                {emptyMessage}
               </div>
             )}
             {filtered.map((option) => (

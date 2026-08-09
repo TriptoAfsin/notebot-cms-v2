@@ -15,12 +15,14 @@ import {
   Mail,
   FileInput,
   FileText,
+  FilePlus2,
   ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home, color: "text-blue-500" },
+  { href: "/content/new", label: "Add Content", icon: FilePlus2, color: "text-primary" },
   { href: "/levels", label: "Levels", icon: Layers, color: "text-violet-500" },
   { href: "/subjects", label: "Subjects", icon: GraduationCap, color: "text-amber-500" },
   { href: "/topics", label: "Topics", icon: BookOpen, color: "text-emerald-500" },
