@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FlushCacheButton } from "./flush-cache-button";
 import {
   Layers,
   GraduationCap,
@@ -79,7 +80,10 @@ export function DashboardView({ data }: { data: DashboardData }) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <FlushCacheButton />
+      </div>
 
       {/* KPI Cards */}
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-8">

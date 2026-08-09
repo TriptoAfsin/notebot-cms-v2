@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useId } from "react";
 import { Search, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +36,7 @@ export function SearchableSelect({
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listboxId = useId();
 
   const filtered = useMemo(() => {
     if (!search.trim()) return options;
@@ -68,9 +69,15 @@ export function SearchableSelect({
       <button
         type="button"
         disabled={disabled}
-        // aria-invalid is not valid on role=button; the ring plus the field error carry it
-        data-invalid={invalid || undefined}
+        // This is a combobox, not a plain button: aria-invalid/aria-expanded/aria-controls are
+        // only meaningful under that role, and the implicit button role does not support them.
+        // Renaming the attribute to data-* would have silenced the lint rule while leaving
+        // screen-reader users with no signal that the field is in error.
+        role="combobox"
+        aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={open ? listboxId : undefined}
+        aria-invalid={invalid || undefined}
         onClick={() => !disabled && setOpen(!open)}
         className={cn(
           "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer",
@@ -111,7 +118,7 @@ export function SearchableSelect({
               className="flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
-          <div className="max-h-60 overflow-y-auto p-1">
+          <div id={listboxId} role="listbox" className="max-h-60 overflow-y-auto p-1">
             {filtered.length === 0 && (
               <div className="py-6 text-center text-sm text-muted-foreground">
                 {emptyMessage}
@@ -121,6 +128,8 @@ export function SearchableSelect({
               <button
                 key={option.value}
                 type="button"
+                role="option"
+                aria-selected={value === option.value}
                 onClick={() => {
                   onValueChange(option.value);
                   setOpen(false);
