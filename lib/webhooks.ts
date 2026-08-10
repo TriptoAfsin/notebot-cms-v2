@@ -16,17 +16,10 @@ import { webhookDeliveries, webhooks } from "@/lib/db/schema";
  * rejected because someone's endpoint is down.
  */
 
-export const WEBHOOK_EVENTS = [
-  "submission.created",
-  "submission.approved",
-  "submission.rejected",
-  "note.created",
-  "note.updated",
-  "note.deleted",
-  "topic.created",
-  "subject.created",
-] as const;
-export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
+// The vocabulary lives in a dependency-free module so client components can import it without
+// dragging this file's database client — and therefore `pg` — into the browser bundle.
+export { WEBHOOK_EVENTS, type WebhookEvent } from "@/lib/webhook-events";
+import { WEBHOOK_EVENTS, type WebhookEvent } from "@/lib/webhook-events";
 
 const TIMEOUT_MS = 8000;
 const MAX_ATTEMPTS = 3;

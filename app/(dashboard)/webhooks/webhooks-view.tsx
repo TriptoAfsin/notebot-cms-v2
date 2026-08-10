@@ -16,7 +16,9 @@ import { Label } from "@/components/ui/label";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { WEBHOOK_EVENTS } from "@/lib/webhooks";
+// from lib/webhook-events, not lib/webhooks: the latter imports the DB client, which a client
+// component must not pull in — it puts `pg` in the browser bundle and the build fails
+import { WEBHOOK_EVENTS } from "@/lib/webhook-events";
 import { cn } from "@/lib/utils";
 
 type Hook = {
