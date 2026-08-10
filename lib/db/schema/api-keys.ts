@@ -24,6 +24,12 @@ export const apiKeys = pgTable(
     scopes: jsonb("scopes").$type<string[]>().default(["ingest:write"]).notNull(),
     createdBy: varchar("created_by", { length: 255 }),
     lastUsedAt: timestamp("last_used_at"),
+    /**
+     * Null means it never expires. A key handed to an integration tends to outlive the
+     * integration, so the default in the UI is a bounded lifetime and "never" is the deliberate
+     * choice rather than the accidental one.
+     */
+    expiresAt: timestamp("expires_at"),
     /** revoking keeps the row so the audit trail still resolves the key that acted */
     revokedAt: timestamp("revoked_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Copy, KeyRound, Plus, ShieldOff } from "lucide-react";
+import { BookOpen, Check, Copy, KeyRound, Plus, ShieldOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { createApiKeyAction, revokeApiKeyAction } from "@/actions/api-keys.action";
@@ -14,6 +14,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { DeleteDialog } from "@/components/delete-dialog";
+import { cn } from "@/lib/utils";
+import { ApiUsage } from "./api-usage";
 
 type Key = {
   id: number;
@@ -21,13 +23,30 @@ type Key = {
   prefix: string;
   createdBy: string | null;
   lastUsedAt: Date | string | null;
+  expiresAt: Date | string | null;
   revokedAt: Date | string | null;
   createdAt: Date | string;
 };
 
 const when = (v: Date | string | null) => (v ? new Date(v).toLocaleString() : "—");
 
-export function ApiKeysView({ keys }: { keys: Key[] }) {
+/** revoked beats expired beats active — the most restrictive fact is the useful one */
+function keyState(k: Key) {
+  if (k.revokedAt) return "revoked" as const;
+  if (k.expiresAt && new Date(k.expiresAt).getTime() <= Date.now()) return "expired" as const;
+  return "active" as const;
+}
+
+const EXPIRY_CHOICES = [
+  { value: "30", label: "30 days" },
+  { value: "90", label: "90 days" },
+  { value: "180", label: "6 months" },
+  { value: "365", label: "1 year" },
+  { value: "never", label: "Never" },
+] as const;
+
+export function ApiKeysView({ keys, baseUrl }: { keys: Key[]; baseUrl: string }) {
+  const [tab, setTab] = useState<"keys" | "usage">("keys");
   const [pending, startTransition] = useTransition();
   const [minted, setMinted] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -59,15 +78,37 @@ export function ApiKeysView({ keys }: { keys: Key[] }) {
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-4">
         <h1 className="text-2xl font-bold">API keys</h1>
         <p className="text-sm text-muted-foreground mt-1">
           For machine callers posting to{" "}
-          <code className="font-mono text-xs">/api/v1/ingest/note</code> — n8n, a script, or the
-          scheduled agent.
+          <code className="font-mono text-xs">/api/v1/ingest/note</code> — n8n, a script, or an AI
+          agent.
         </p>
       </div>
 
+      <div className="mb-6 inline-flex rounded-md border p-0.5">
+        {([["keys", "Keys", KeyRound], ["usage", "API usage", BookOpen]] as const).map(([id, text, Icon]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setTab(id)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm transition-colors",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              tab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {text}
+          </button>
+        ))}
+      </div>
+
+      {tab === "usage" && <ApiUsage baseUrl={baseUrl} />}
+
+      {tab === "keys" && (
+      <>
       {minted && (
         <Card className="mb-6 border-primary/40 bg-primary/5">
           <CardHeader>
@@ -109,6 +150,19 @@ export function ApiKeysView({ keys }: { keys: Key[] }) {
                 required
               />
             </div>
+            <div className="space-y-2 sm:w-40">
+              <Label htmlFor="expiresInDays">Expires</Label>
+              <select
+                id="expiresInDays"
+                name="expiresInDays"
+                defaultValue="90"
+                className="h-9 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm"
+              >
+                {EXPIRY_CHOICES.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </div>
             <Button type="submit" disabled={pending}>
               <Plus className="h-4 w-4 mr-1.5" />
               {pending ? "Creating…" : "Create key"}
@@ -124,6 +178,7 @@ export function ApiKeysView({ keys }: { keys: Key[] }) {
               <TableHead>Label</TableHead>
               <TableHead className="w-40">Key</TableHead>
               <TableHead className="w-24">Status</TableHead>
+              <TableHead className="w-44">Expires</TableHead>
               <TableHead className="w-44">Last used</TableHead>
               <TableHead className="w-44">Created</TableHead>
               <TableHead className="w-20">Actions</TableHead>
@@ -135,15 +190,19 @@ export function ApiKeysView({ keys }: { keys: Key[] }) {
                 <TableCell className="font-medium">{k.label}</TableCell>
                 <TableCell className="font-mono text-xs text-muted-foreground">{k.prefix}…</TableCell>
                 <TableCell>
-                  {k.revokedAt ? (
-                    <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive">
-                      revoked
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                      active
-                    </Badge>
-                  )}
+                  {(() => {
+                    const state = keyState(k);
+                    const style =
+                      state === "active"
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        : state === "expired"
+                          ? "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                          : "border-destructive/30 bg-destructive/10 text-destructive";
+                    return <Badge variant="outline" className={style}>{state}</Badge>;
+                  })()}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {k.expiresAt ? when(k.expiresAt) : "never"}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">{when(k.lastUsedAt)}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">
@@ -162,7 +221,7 @@ export function ApiKeysView({ keys }: { keys: Key[] }) {
             ))}
             {keys.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
                   <KeyRound className="mx-auto mb-2 h-5 w-5 opacity-50" />
                   No keys yet.
                 </TableCell>
@@ -174,9 +233,12 @@ export function ApiKeysView({ keys }: { keys: Key[] }) {
 
       <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
         <ShieldOff className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        Revoking keeps the row so audit entries that reference the key still resolve. A revoked
-        key stops working immediately.
+        Revoking keeps the row so audit entries that reference the key still resolve. A revoked or
+        expired key stops working immediately — expiry is checked on every request, not by a
+        scheduled sweep.
       </p>
+      </>
+      )}
     </div>
   );
 }

@@ -37,11 +37,18 @@ export async function verifyApiKey(presented: string | null | undefined): Promis
 
   const hash = hashKey(presented);
   const [row] = await db
-    .select({ id: apiKeys.id, label: apiKeys.label, scopes: apiKeys.scopes, keyHash: apiKeys.keyHash })
+    .select({
+      id: apiKeys.id, label: apiKeys.label, scopes: apiKeys.scopes,
+      keyHash: apiKeys.keyHash, expiresAt: apiKeys.expiresAt,
+    })
     .from(apiKeys)
     .where(and(eq(apiKeys.keyHash, hash), isNull(apiKeys.revokedAt)));
 
   if (!row) return null;
+
+  // expiry is enforced here, not by a scheduled job — a key must stop working at its deadline
+  // even if nothing has swept the table
+  if (row.expiresAt && row.expiresAt.getTime() <= Date.now()) return null;
 
   // The DB already matched on equality; this is belt-and-braces against a future change that
   // fetches candidates some other way.

@@ -19,6 +19,7 @@ export async function getApiKeysAction() {
       prefix: apiKeys.prefix,
       createdBy: apiKeys.createdBy,
       lastUsedAt: apiKeys.lastUsedAt,
+      expiresAt: apiKeys.expiresAt,
       revokedAt: apiKeys.revokedAt,
       createdAt: apiKeys.createdAt,
     })
@@ -36,14 +37,28 @@ export async function createApiKeyAction(formData: FormData) {
   const user = await requireUser();
   if (!user) return UNAUTHORIZED;
 
-  const parsed = z.object({ label: z.string().trim().min(1, "Label is required").max(100) })
-    .safeParse({ label: formData.get("label") });
+  const parsed = z
+    .object({
+      label: z.string().trim().min(1, "Label is required").max(100),
+      // days, or "never" — a bounded default because a key outlives the integration it was
+      // minted for far more often than anyone intends
+      expiresInDays: z.enum(["30", "90", "180", "365", "never"]).default("90"),
+    })
+    .safeParse({
+      label: formData.get("label"),
+      expiresInDays: formData.get("expiresInDays") ?? "90",
+    });
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors, success: undefined };
+
+  const expiresAt =
+    parsed.data.expiresInDays === "never"
+      ? null
+      : new Date(Date.now() + Number(parsed.data.expiresInDays) * 86_400_000);
 
   const { key, keyHash, prefix } = mintApiKey();
   const [row] = await db
     .insert(apiKeys)
-    .values({ label: parsed.data.label, keyHash, prefix, createdBy: user.email ?? user.id })
+    .values({ label: parsed.data.label, keyHash, prefix, expiresAt, createdBy: user.email ?? user.id })
     .returning();
 
   await logAudit({
@@ -52,7 +67,7 @@ export async function createApiKeyAction(formData: FormData) {
     entityId: row.id,
     entityLabel: parsed.data.label,
     // never the key or its hash — an audit row is not a place to leak a credential
-    after: { label: parsed.data.label, prefix },
+    after: { label: parsed.data.label, prefix, expiresAt: expiresAt?.toISOString() ?? null },
   });
 
   revalidatePath("/api-keys");
