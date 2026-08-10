@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SearchableSelect } from "@/components/searchable-select";
+import { LivePreview } from "@/components/live-preview";
 import { toast } from "sonner";
 
 type Subject = {
@@ -18,6 +19,9 @@ type Subject = {
 export function NewTopicForm({ subjects }: { subjects: Subject[] }) {
   const router = useRouter();
   const [subjectId, setSubjectId] = useState("");
+  // controlled so the preview can follow keystrokes
+  const [displayName, setDisplayName] = useState("");
+  const [slug, setSlug] = useState("");
 
   const subjectOptions = subjects.map((s) => ({
     value: String(s.id),
@@ -75,11 +79,19 @@ export function NewTopicForm({ subjects }: { subjects: Subject[] }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="displayName">Display Name</Label>
-            <Input id="displayName" name="displayName" placeholder="Topic Name" required />
+            <Input id="displayName" name="displayName" placeholder="Topic Name" required
+              value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="slug">Slug</Label>
-            <Input id="slug" name="slug" placeholder="topic-name" required />
+            <Input id="slug" name="slug" placeholder="topic-name" required
+              value={slug} onChange={(e) => setSlug(e.target.value)} />
+          </div>
+
+          {/* A topic is a button on the subject page, so its display name is subject to the same
+              20-character cut as any other Messenger button title. */}
+          <div className="rounded-lg border bg-muted/20 p-3">
+            <LivePreview kind="topic" subjectId={subjectId} displayName={displayName} slug={slug} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="author">Author</Label>

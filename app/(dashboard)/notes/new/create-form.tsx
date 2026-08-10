@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SearchableSelect } from "@/components/searchable-select";
+import { LivePreview } from "@/components/live-preview";
 import { toast } from "sonner";
 
 type Topic = {
@@ -19,6 +20,9 @@ type Topic = {
 export function CreateNoteForm({ topics }: { topics: Topic[] }) {
   const router = useRouter();
   const [topicId, setTopicId] = useState("");
+  // controlled so the preview can follow keystrokes
+  const [title, setTitle] = useState("");
+  const [url, setUrl] = useState("");
 
   const topicOptions = topics.map((t) => ({
     value: String(t.id),
@@ -72,11 +76,19 @@ export function CreateNoteForm({ topics }: { topics: Topic[] }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
-            <Input id="title" name="title" placeholder="Note title" required />
+            <Input id="title" name="title" placeholder="Note title" required
+              value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="url">URL</Label>
-            <Input id="url" name="url" type="url" placeholder="https://example.com/note" required />
+            <Input id="url" name="url" type="url" placeholder="https://example.com/note" required
+              value={url} onChange={(e) => setUrl(e.target.value)} />
+          </div>
+
+          {/* Messenger truncates a button title at 20 characters and says nothing about it,
+              so the damage has to be visible before saving, not after a student sees it. */}
+          <div className="rounded-lg border bg-muted/20 p-3">
+            <LivePreview kind="note" topicId={topicId} title={title} url={url} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">

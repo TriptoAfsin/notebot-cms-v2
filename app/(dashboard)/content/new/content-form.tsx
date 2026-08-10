@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchableSelect } from "@/components/searchable-select";
 import { cn } from "@/lib/utils";
-import { ContentPreview } from "./content-preview";
+import { ContentPreview } from "@/components/content-preview";
 
 type Level = { id: number; displayName: string; slug: string };
 type Option = { id: number; displayName: string; slug: string };

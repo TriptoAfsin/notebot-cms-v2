@@ -57,6 +57,12 @@ export type PreviewInput = {
   topic: { slug: string; display: string } | null;
   noteTitle: string;
   noteUrl: string;
+  /**
+   * What is being previewed. A "topic" is itself the button on the subject page — it opens a
+   * sub-page via a postback and has no url of its own, so requiring one would report a false
+   * error on the topics form.
+   */
+  previewOf?: "note" | "topic";
   /** groups already present on the subject page, so the preview shows the real neighbourhood */
   existing?: PreviewGroup[];
 };
@@ -103,10 +109,13 @@ export function buildPreview(input: PreviewInput): PreviewResult {
     }
   }
 
-  if (!input.noteUrl) {
-    warnings.push({ level: "error", message: "A link is required — the button has nothing to open." });
-  } else if (!/^https?:\/\//i.test(input.noteUrl)) {
-    warnings.push({ level: "error", message: "Link must start with http:// or https://." });
+  // a topic navigates by postback, so it has no url to validate
+  if ((input.previewOf ?? "note") === "note") {
+    if (!input.noteUrl) {
+      warnings.push({ level: "error", message: "A link is required — the button has nothing to open." });
+    } else if (!/^https?:\/\//i.test(input.noteUrl)) {
+      warnings.push({ level: "error", message: "Link must start with http:// or https://." });
+    }
   }
 
   // --- the app API side (SubTopicTrans) ---

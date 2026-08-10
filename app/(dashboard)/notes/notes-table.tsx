@@ -29,6 +29,7 @@ import { SearchInput } from "@/components/search-input";
 import { TablePagination } from "@/components/table-pagination";
 import { useDebounce } from "@/hooks/use-debounce";
 import { SearchableSelect } from "@/components/searchable-select";
+import { LivePreview } from "@/components/live-preview";
 import { updateNoteAction } from "@/actions/notes.action";
 import { toast } from "sonner";
 
@@ -287,6 +288,17 @@ export function NotesTable({
               {form.formState.errors.url && (
                 <p className="text-sm text-destructive">{form.formState.errors.url.message}</p>
               )}
+            </div>
+
+            {/* The pencil opens this sheet, so this is where most edits actually happen — the
+                preview has to be here, not only on the create page. form.watch keeps it live. */}
+            <div className="rounded-lg border bg-muted/20 p-3">
+              <LivePreview
+                kind="note"
+                topicId={String(form.watch("topicId") ?? "")}
+                title={form.watch("title") ?? ""}
+                url={form.watch("url") ?? ""}
+              />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">

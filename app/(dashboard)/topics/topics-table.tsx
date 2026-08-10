@@ -29,6 +29,7 @@ import { SearchInput } from "@/components/search-input";
 import { TablePagination } from "@/components/table-pagination";
 import { useDebounce } from "@/hooks/use-debounce";
 import { SearchableSelect } from "@/components/searchable-select";
+import { LivePreview } from "@/components/live-preview";
 import { updateTopicAction } from "@/actions/topics.action";
 import { toast } from "sonner";
 
@@ -284,6 +285,17 @@ export function TopicsTable({
               {form.formState.errors.displayName && (
                 <p className="text-sm text-destructive">{form.formState.errors.displayName.message}</p>
               )}
+            </div>
+
+            {/* Renaming a topic changes a Messenger button title, so the 20-character cut
+                applies here too — this sheet is where renames actually happen. */}
+            <div className="rounded-lg border bg-muted/20 p-3">
+              <LivePreview
+                kind="topic"
+                subjectId={String(form.watch("subjectId") ?? "")}
+                displayName={form.watch("displayName") ?? ""}
+                slug={form.watch("slug") ?? ""}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-slug">Slug</Label>
