@@ -37,3 +37,15 @@ export async function invalidateQBsCache(levelId: number) {
 export async function invalidateSyllabusCache() {
   await invalidateCachePattern("syllabus:*");
 }
+
+/**
+ * The bot's bespoke flows.
+ *
+ * The engine keeps this list in Redis *and* in a short-lived in-process memo, because every postback
+ * consults it — see `bot-flow.service.ts`. Clearing Redis is enough for correctness; the memo
+ * expires within a minute, so an edit shows up in the bot almost immediately rather than after the
+ * hour-long TTL.
+ */
+export async function invalidateBotFlowsCache() {
+  await invalidateCache("botflows:all");
+}
