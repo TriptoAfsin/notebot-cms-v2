@@ -152,6 +152,7 @@ export function LabReportsTable({
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search lab reports..."
         />
         <div className="flex flex-wrap items-center gap-2">

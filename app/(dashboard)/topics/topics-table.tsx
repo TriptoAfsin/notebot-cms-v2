@@ -175,6 +175,7 @@ export function TopicsTable({
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search topics..."
         />
         <select

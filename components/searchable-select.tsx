@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect, useId } from "react";
 import { Search, ChevronDown, X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 type Option = {
@@ -19,6 +20,7 @@ export function SearchableSelect({
   disabled = false,
   invalid = false,
   emptyMessage = "No results found",
+  loading = false,
 }: {
   options: Option[];
   value: string;
@@ -31,6 +33,12 @@ export function SearchableSelect({
   /** mirrors the error ring the plain inputs get, so a missed pick is visible */
   invalid?: boolean;
   emptyMessage?: string;
+  /**
+   * Options are still being fetched. Without this an in-flight picker is indistinguishable from
+   * an empty one, so a cascading step reads as "this subject has no topics" for as long as the
+   * request takes.
+   */
+  loading?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -62,6 +70,21 @@ export function SearchableSelect({
       inputRef.current.focus();
     }
   }, [open]);
+
+  // A skeleton in place of the whole control, rather than a spinner beside a clickable-looking
+  // trigger: an empty picker that responds to clicks is worse than one that visibly isn't ready.
+  if (loading) {
+    return (
+      <div className="relative" aria-busy="true" aria-live="polite">
+        {name && <input type="hidden" name={name} value={value} />}
+        <div className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3">
+          <Skeleton className="h-3.5 w-1/2" />
+          <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+        </div>
+        <span className="sr-only">Loading options…</span>
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="relative">

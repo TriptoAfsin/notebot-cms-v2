@@ -8,6 +8,7 @@ import {
   type PreviewContext,
 } from "@/actions/preview.action";
 import { ContentPreview } from "@/components/content-preview";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * Drop-in preview for the per-entity note and topic forms.
@@ -56,7 +57,20 @@ export function LivePreview(
     );
   }
   if (loading && !ctx) {
-    return <p className="text-xs text-muted-foreground">Loading preview…</p>;
+    // Shaped like the panel it replaces — a bare "Loading…" makes the layout jump once the
+    // Messenger bubble and the JSON block arrive.
+    return (
+      <div className="space-y-3" aria-busy="true" aria-live="polite">
+        <Skeleton className="h-3 w-24" />
+        <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-16 w-full rounded-lg" />
+        <span className="sr-only">Loading preview…</span>
+      </div>
+    );
   }
   if (!ctx) {
     return <p className="text-xs text-muted-foreground">That parent no longer exists.</p>;

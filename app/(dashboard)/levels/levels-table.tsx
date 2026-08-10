@@ -112,6 +112,7 @@ export function LevelsTable({ levels }: { levels: Level[] }) {
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search levels..."
         />
       </div>

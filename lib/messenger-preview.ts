@@ -74,6 +74,17 @@ export function buildPreview(input: PreviewInput): PreviewResult {
   const isDirectLink = !input.topic;
   const header = isDirectLink ? `📌 ${input.subjectDisplay} -` : `🔰 Select Topics for ${input.subjectDisplay} - `;
 
+  // The subject's own name is a button on the LEVEL page, so it is cut at 20 too. Nine subjects
+  // already exceed it — the longest is 40 characters — and nothing warned about it, because the
+  // preview only ever looked at what was being edited rather than at its parent.
+  const subj = truncate(input.subjectDisplay, MESSENGER_LIMITS.buttonTitle);
+  if (subj.truncated) {
+    warnings.push({
+      level: "warn",
+      message: `Subject name is ${subj.from} characters. On the level menu it appears as “${subj.text}”.`,
+    });
+  }
+
   // --- the Messenger side ---
   if (isDirectLink) {
     const t = truncate(input.noteTitle, MESSENGER_LIMITS.buttonTitle);

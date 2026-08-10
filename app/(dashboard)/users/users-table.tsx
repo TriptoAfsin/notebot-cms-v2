@@ -51,6 +51,7 @@ export function UsersTable({ users }: { users: User[] }) {
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search users..."
         />
       </div>

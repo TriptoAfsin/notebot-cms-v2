@@ -170,6 +170,7 @@ export function NotesTable({
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search notes..."
         />
         <select

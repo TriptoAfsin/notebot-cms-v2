@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchableSelect } from "@/components/searchable-select";
+import { composeNoteTitle, DEPARTMENTS, NOTE_KINDS } from "@/lib/note-title";
 import { cn } from "@/lib/utils";
 import { ContentPreview } from "@/components/content-preview";
 
@@ -76,11 +77,28 @@ export function ContentForm({ levels }: { levels: Level[] }) {
   const [topicSlug, setTopicSlug] = useState("");
   const [topicSlugTouched, setTopicSlugTouched] = useState(false);
 
-  const [title, setTitle] = useState("");
+  // Title is composed from parts rather than typed. Hand-typing is how the corpus ended up with
+  // "Hand Note " (57 rows, trailing space) and batches written both "TME-51" and "TME51".
+  const [kind, setKind] = useState<string>(NOTE_KINDS[0]);
+  const [author, setAuthor] = useState("");
+  const [department, setDepartment] = useState("");
+  const [batch, setBatch] = useState("");
+  const [year, setYear] = useState(String(new Date().getFullYear()));
+  // escape hatch for the titles that genuinely do not fit the pattern
+  const [titleManual, setTitleManual] = useState(false);
+  const [titleOverride, setTitleOverride] = useState("");
+
+  const composedTitle = composeNoteTitle({ kind, author, department, batch, year });
+  const title = titleManual ? titleOverride : composedTitle;
+
   const [url, setUrl] = useState("");
 
   const [subjects, setSubjects] = useState<Option[]>([]);
   const [topics, setTopics] = useState<Option[]>([]);
+  // tracked separately from the lists: an in-flight fetch and a genuinely empty parent both
+  // leave the array empty, and telling the editor "no topics here" while still loading is wrong
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const [loadingTopics, setLoadingTopics] = useState(false);
 
   // Each step is scoped to its parent — the old pickers serialized every row in the database
   // into the client bundle. The state update stays inside the async continuation; setting it
@@ -88,19 +106,20 @@ export function ContentForm({ levels }: { levels: Level[] }) {
   useEffect(() => {
     let live = true;
     (async () => {
+      if (live) setLoadingSubjects(!!levelId);
       const rows = levelId ? await getSubjectsForLevelAction(Number(levelId)) : [];
-      if (live) setSubjects(rows as Option[]);
+      if (live) { setSubjects(rows as Option[]); setLoadingSubjects(false); }
     })();
     return () => { live = false; };
   }, [levelId]);
 
   useEffect(() => {
     let live = true;
+    const shouldFetch = !!subjectId && subjectMode !== "new";
     (async () => {
-      const rows = subjectId && subjectMode !== "new"
-        ? await getTopicsForSubjectAction(Number(subjectId))
-        : [];
-      if (live) setTopics(rows as Option[]);
+      if (live) setLoadingTopics(shouldFetch);
+      const rows = shouldFetch ? await getTopicsForSubjectAction(Number(subjectId)) : [];
+      if (live) { setTopics(rows as Option[]); setLoadingTopics(false); }
     })();
     return () => { live = false; };
   }, [subjectId, subjectMode]);
@@ -192,6 +211,7 @@ export function ContentForm({ levels }: { levels: Level[] }) {
                     placeholder={levelId ? "Select a subject" : "Pick a level first"}
                     emptyMessage="No subjects in this level yet — switch to New"
                     disabled={!levelId}
+                    loading={loadingSubjects}
                     invalid={!!errors.subjectId}
                   />
                   <FieldError errors={errors} name="subjectId" />
@@ -237,6 +257,7 @@ export function ContentForm({ levels }: { levels: Level[] }) {
                     placeholder={subjectId ? "Select a topic" : "Pick a subject first"}
                     emptyMessage="No topics in this subject yet — switch to New"
                     disabled={!subjectId || subjectMode === "new"}
+                    loading={loadingTopics}
                     invalid={!!errors.topicId}
                   />
                   <FieldError errors={errors} name="topicId" />
@@ -264,12 +285,80 @@ export function ContentForm({ levels }: { levels: Level[] }) {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input id="title" name="title" value={title} onChange={(e) => setTitle(e.target.value)}
-                placeholder="Hand Note(Jeba Fariha, TME-51, 2026)" aria-invalid={!!errors.title || undefined} />
+            {/* Title is built from parts. The corpus shows why: 756 titles start "Hand Note",
+                57 more start "Hand Note " with a trailing space, and batches appear as both
+                "TME-51" and "TME51" — all of it from free-typing the same string 2,300 times. */}
+            <fieldset className="space-y-3">
+              <div className="flex items-center justify-between">
+                <legend className="text-sm font-medium">Title</legend>
+                <button
+                  type="button"
+                  onClick={() => { setTitleManual(!titleManual); if (!titleManual) setTitleOverride(composedTitle); }}
+                  className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                >
+                  {titleManual ? "Build from fields" : "Type it manually"}
+                </button>
+              </div>
+
+              {titleManual ? (
+                <Input
+                  value={titleOverride}
+                  onChange={(e) => setTitleOverride(e.target.value)}
+                  placeholder="Hand Note(Jeba Fariha, TME-51, 2026)"
+                  aria-invalid={!!errors.title || undefined}
+                />
+              ) : (
+                <>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="kind" className="text-xs text-muted-foreground">Kind</Label>
+                      <select
+                        id="kind"
+                        value={kind}
+                        onChange={(e) => setKind(e.target.value)}
+                        className="h-9 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm"
+                      >
+                        {NOTE_KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="author" className="text-xs text-muted-foreground">Author</Label>
+                      <Input id="author" value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Jeba Fariha" />
+                    </div>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="department" className="text-xs text-muted-foreground">Department</Label>
+                      <select
+                        id="department"
+                        value={department}
+                        onChange={(e) => setDepartment(e.target.value)}
+                        className="h-9 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm"
+                      >
+                        <option value="">—</option>
+                        {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="batch" className="text-xs text-muted-foreground">Batch</Label>
+                      <Input id="batch" value={batch} onChange={(e) => setBatch(e.target.value)} placeholder="51" inputMode="numeric" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="year" className="text-xs text-muted-foreground">Year</Label>
+                      <Input id="year" value={year} onChange={(e) => setYear(e.target.value)} placeholder="2026" inputMode="numeric" />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Saves as{" "}
+                    <code className="font-mono text-foreground">{composedTitle || "—"}</code>
+                  </p>
+                </>
+              )}
+
+              {/* the composed value is what actually submits, either way */}
+              <input type="hidden" name="title" value={title} />
               <FieldError errors={errors} name="title" />
-            </div>
+            </fieldset>
 
             <div className="space-y-2">
               <Label htmlFor="url">Link</Label>

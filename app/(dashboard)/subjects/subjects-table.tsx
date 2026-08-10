@@ -144,6 +144,7 @@ export function SubjectsTable({
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search subjects..."
         />
         <select

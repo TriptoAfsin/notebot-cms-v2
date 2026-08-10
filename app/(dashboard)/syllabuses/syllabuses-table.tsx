@@ -154,6 +154,7 @@ export function SyllabusesTable({
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search syllabuses..."
         />
         <div className="flex flex-wrap items-center gap-2">

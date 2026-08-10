@@ -147,6 +147,7 @@ export function QuestionBanksTable({
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search question banks..."
         />
         <div className="flex flex-wrap items-center gap-2">

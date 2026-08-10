@@ -161,6 +161,7 @@ function SubmissionsContent() {
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search submissions..."
         />
         <div className="flex flex-wrap gap-2">

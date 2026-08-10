@@ -154,6 +154,7 @@ export function RoutinesTable({
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search routines..."
         />
       </div>

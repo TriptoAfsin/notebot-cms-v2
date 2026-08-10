@@ -83,6 +83,7 @@ export function InvitationsTable({ invitations }: { invitations: Invitation[] })
         <SearchInput
           value={search}
           onChange={setSearch}
+          pending={search !== debouncedSearch}
           placeholder="Search invitations..."
         />
       </div>
