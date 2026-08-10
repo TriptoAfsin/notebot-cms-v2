@@ -14,8 +14,12 @@ import { NextRequest, NextResponse } from "next/server";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public routes that don't need auth
-  const publicRoutes = ["/login", "/api/auth", "/setup", "/submit", "/invite"];
+  // Public routes that don't need auth.
+  //
+  // /api/v1 is listed because it authenticates itself with an x-api-key header. The matcher
+  // below catches every path, so without this the ingest endpoint would be 302'd to /login and
+  // a machine caller would receive an HTML login page with a 200.
+  const publicRoutes = ["/login", "/api/auth", "/api/v1", "/setup", "/submit", "/invite"];
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
