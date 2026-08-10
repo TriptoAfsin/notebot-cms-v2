@@ -2,6 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { levels, notes, subjects, topics } from "@/lib/db/schema";
+import { uniqueSlug } from "@/lib/slug";
 import { invalidateNotesCache, invalidateSubjectsCache, invalidateTopicsCache } from "@/services/cache";
 
 /**
@@ -114,7 +115,9 @@ export async function ingestNote(input: IngestInput): Promise<IngestResult> {
     } else {
       // Subject-level link: a topic carrying metadata.directUrl, which the engine's compat layer
       // returns as {topic, url}. Same convention as the 677 such topics already in the tree.
-      const linkSlug = slugify(input.title, 90) || `link_${Date.now()}`;
+      const linkSiblings = await tx.select({ slug: topics.slug }).from(topics)
+        .where(eq(topics.subjectId, subject.id));
+      const linkSlug = uniqueSlug(input.title, linkSiblings.map((t) => t.slug), 100);
       const [topic] = await tx
         .insert(topics)
         .values({

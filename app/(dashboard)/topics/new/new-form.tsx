@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SearchableSelect } from "@/components/searchable-select";
 import { LivePreview } from "@/components/live-preview";
+import { toSlug } from "@/lib/slug";
 import { toast } from "sonner";
 
 type Subject = {
@@ -21,7 +22,8 @@ export function NewTopicForm({ subjects }: { subjects: Subject[] }) {
   const [subjectId, setSubjectId] = useState("");
   // controlled so the preview can follow keystrokes
   const [displayName, setDisplayName] = useState("");
-  const [slug, setSlug] = useState("");
+  // derived, never typed
+  const slug = toSlug(displayName, 100);
 
   const subjectOptions = subjects.map((s) => ({
     value: String(s.id),
@@ -75,7 +77,8 @@ export function NewTopicForm({ subjects }: { subjects: Subject[] }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" placeholder="topic_name" required />
+            <Input id="name" value={slug || "—"} readOnly disabled tabIndex={-1} className="font-mono text-xs" />
+            <input type="hidden" name="name" value={slug} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="displayName">Display Name</Label>
@@ -84,8 +87,14 @@ export function NewTopicForm({ subjects }: { subjects: Subject[] }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="slug">Slug</Label>
-            <Input id="slug" name="slug" placeholder="topic-name" required
-              value={slug} onChange={(e) => setSlug(e.target.value)} />
+            {/* Generated from the display name. The slug is part of the URL the engine resolves,
+                and hand-typing it is how the tree ended up with both "IAE" and "iae". */}
+            <Input id="slug" value={slug || "—"} readOnly disabled tabIndex={-1}
+              aria-describedby="slug-hint" className="font-mono text-xs" />
+            <p id="slug-hint" className="text-xs text-muted-foreground">
+              Generated from the display name; a clash is resolved automatically.
+            </p>
+            <input type="hidden" name="slug" value={slug} />
           </div>
 
           {/* A topic is a button on the subject page, so its display name is subject to the same

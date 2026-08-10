@@ -15,16 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchableSelect } from "@/components/searchable-select";
 import { composeNoteTitle } from "@/lib/note-title";
+import { toSlug } from "@/lib/slug";
 import { cn } from "@/lib/utils";
 import { ContentPreview } from "@/components/content-preview";
 
 type Level = { id: number; displayName: string; slug: string };
 type Option = { id: number; displayName: string; slug: string };
 type Errors = Record<string, string[] | undefined>;
-
-/** Mirrors the slug rule the action enforces, so the field can be filled in automatically. */
-const toSlug = (s: string) =>
-  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 50);
 
 function FieldError({ errors, name }: { errors: Errors; name: string }) {
   const msg = errors[name]?.[0];
@@ -79,14 +76,10 @@ export function ContentForm({
   const [subjectMode, setSubjectMode] = useState<"existing" | "new">("existing");
   const [subjectId, setSubjectId] = useState("");
   const [subjectName, setSubjectName] = useState("");
-  const [subjectSlug, setSubjectSlug] = useState("");
-  const [subjectSlugTouched, setSubjectSlugTouched] = useState(false);
 
   const [topicMode, setTopicMode] = useState<"existing" | "new" | "none">("existing");
   const [topicId, setTopicId] = useState("");
   const [topicName, setTopicName] = useState("");
-  const [topicSlug, setTopicSlug] = useState("");
-  const [topicSlugTouched, setTopicSlugTouched] = useState(false);
 
   // Title is composed from parts rather than typed. Hand-typing is how the corpus ended up with
   // "Hand Note " (57 rows, trailing space) and batches written both "TME-51" and "TME51".
@@ -135,13 +128,10 @@ export function ContentForm({
     return () => { live = false; };
   }, [subjectId, subjectMode]);
 
-  // derive slugs until the editor overrides them
-  if (!subjectSlugTouched && subjectMode === "new" && toSlug(subjectName) !== subjectSlug) {
-    setSubjectSlug(toSlug(subjectName));
-  }
-  if (!topicSlugTouched && topicMode === "new" && toSlug(topicName) !== topicSlug) {
-    setTopicSlug(toSlug(topicName));
-  }
+  // Derived on every render; there is no manual override any more. A collision is resolved
+  // server-side by suffixing rather than rejected, so nothing here has to know what is taken.
+  const subjectSlug = subjectMode === "new" ? toSlug(subjectName, 50) : "";
+  const topicSlug = topicMode === "new" ? toSlug(topicName, 100) : "";
 
   const level = levels.find((l) => String(l.id) === levelId);
   const chosenSubject = subjects.find((s) => String(s.id) === subjectId);
@@ -235,9 +225,15 @@ export function ContentForm({
                     <FieldError errors={errors} name="subjectName" />
                   </div>
                   <div className="space-y-1">
-                    <Input name="subjectSlug" value={subjectSlug} placeholder="fpc"
-                      onChange={(e) => { setSubjectSlugTouched(true); setSubjectSlug(e.target.value); }}
-                      aria-invalid={!!errors.subjectSlug || undefined} className="font-mono text-xs" />
+                    {/* Generated, not typed. The slug is part of the URL the engine resolves, and
+                        hand-typing is how the tree ended up with both "IAE" and "iae". A clash is
+                        resolved server-side by suffixing, so this is a preview of the intent. */}
+                    <Input value={subjectSlug || "—"} readOnly disabled tabIndex={-1}
+                      aria-describedby="subject-slug-hint" className="font-mono text-xs" />
+                    <p id="subject-slug-hint" className="text-[11px] text-muted-foreground">
+                      Slug, generated from the name
+                    </p>
+                    <input type="hidden" name="subjectSlug" value={subjectSlug} />
                     <FieldError errors={errors} name="subjectSlug" />
                   </div>
                 </div>
@@ -282,9 +278,12 @@ export function ContentForm({
                     <FieldError errors={errors} name="topicName" />
                   </div>
                   <div className="space-y-1">
-                    <Input name="topicSlug" value={topicSlug} placeholder="fpc_degradation"
-                      onChange={(e) => { setTopicSlugTouched(true); setTopicSlug(e.target.value); }}
-                      aria-invalid={!!errors.topicSlug || undefined} className="font-mono text-xs" />
+                    <Input value={topicSlug || "—"} readOnly disabled tabIndex={-1}
+                      aria-describedby="topic-slug-hint" className="font-mono text-xs" />
+                    <p id="topic-slug-hint" className="text-[11px] text-muted-foreground">
+                      Slug, generated from the name
+                    </p>
+                    <input type="hidden" name="topicSlug" value={topicSlug} />
                     <FieldError errors={errors} name="topicSlug" />
                   </div>
                 </div>

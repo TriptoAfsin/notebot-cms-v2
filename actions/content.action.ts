@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { levels, notes, subjects, topics } from "@/lib/db/schema";
 import { logAudit } from "@/lib/audit";
 import { requireUser, UNAUTHORIZED } from "@/lib/session";
+import { uniqueSlug } from "@/lib/slug";
 import { invalidateNotesCache, invalidateSubjectsCache, invalidateTopicsCache } from "@/services/cache";
 
 /**
@@ -87,18 +88,19 @@ export async function createContentAction(formData: FormData) {
       let createdSubject = false;
 
       if (d.subjectMode === "new") {
-        // Slugs are not unique in the DB, so guard here or the engine picks nondeterministically.
-        // Compared case-insensitively: the engine resolves slugs that way, so "FPC" and "fpc"
-        // would collide at read time even though an exact compare sees two distinct rows.
-        const clash = await tx.select({ id: subjects.id }).from(subjects)
-          .where(and(eq(subjects.levelId, d.levelId), sql`lower(${subjects.slug}) = ${d.subjectSlug!.toLowerCase()}`));
-        if (clash.length) throw new Error(`A subject with slug “${d.subjectSlug}” already exists in this level`);
+        // Slugs are derived, and `subjects.slug` has no unique constraint — two rows sharing one
+        // makes the engine resolve them nondeterministically. Rather than rejecting the save
+        // (the editor cannot know what is already taken), suffix until it is free. Compared
+        // case-insensitively because the engine's lookup is.
+        const siblings = await tx.select({ slug: subjects.slug }).from(subjects)
+          .where(eq(subjects.levelId, d.levelId));
+        const slug = uniqueSlug(d.subjectSlug!, siblings.map((s) => s.slug), 50);
 
         const [row] = await tx.insert(subjects).values({
           levelId: d.levelId,
-          name: d.subjectSlug!,
+          name: slug,
           displayName: d.subjectName!,
-          slug: d.subjectSlug!,
+          slug,
           sortOrder: 999,
           metadata: { source: "cms-content-form" },
         }).returning();
@@ -115,15 +117,15 @@ export async function createContentAction(formData: FormData) {
       let createdTopic = false;
 
       if (d.topicMode === "new") {
-        const clash = await tx.select({ id: topics.id }).from(topics)
-          .where(and(eq(topics.subjectId, subjectId), sql`lower(${topics.slug}) = ${d.topicSlug!.toLowerCase()}`));
-        if (clash.length) throw new Error(`A topic with slug “${d.topicSlug}” already exists in this subject`);
+        const siblings = await tx.select({ slug: topics.slug }).from(topics)
+          .where(eq(topics.subjectId, subjectId));
+        const slug = uniqueSlug(d.topicSlug!, siblings.map((t) => t.slug), 100);
 
         const [row] = await tx.insert(topics).values({
           subjectId,
-          name: d.topicSlug!,
+          name: slug,
           displayName: d.topicName!,
-          slug: d.topicSlug!,
+          slug,
           sortOrder: 999,
           metadata: { source: "cms-content-form" },
         }).returning();
@@ -139,11 +141,14 @@ export async function createContentAction(formData: FormData) {
         // subject-level link: modelled as a topic carrying metadata.directUrl, which is what
         // compat.routes.ts turns into a {topic, url} entry — the same shape v1 emits for a
         // webBtnBlockGen sitting directly in <subject>_flow.js
+        const linkSiblings = await tx.select({ slug: topics.slug }).from(topics)
+          .where(eq(topics.subjectId, subjectId));
+        const linkSlug = uniqueSlug(d.title, linkSiblings.map((t) => t.slug), 100);
         const [row] = await tx.insert(topics).values({
           subjectId,
-          name: d.title.toLowerCase().replace(/[^a-z0-9_]+/g, "").slice(0, 90) || `link${Date.now()}`,
+          name: linkSlug,
           displayName: d.title,
-          slug: d.title.toLowerCase().replace(/[^a-z0-9_]+/g, "").slice(0, 90) || `link${Date.now()}`,
+          slug: linkSlug,
           sortOrder: 999,
           metadata: { source: "cms-content-form", directUrl: d.url },
         }).returning();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { createSubjectAction } from "@/actions/subjects.action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toSlug } from "@/lib/slug";
 import { toast } from "sonner";
 
 type Level = {
@@ -26,6 +28,9 @@ type Level = {
 
 export function CreateSubjectForm({ levels }: { levels: Level[] }) {
   const router = useRouter();
+  // derived, never typed
+  const [displayName, setDisplayName] = useState("");
+  const slug = toSlug(displayName, 50);
 
   const handleSubmit = async (formData: FormData) => {
     const result = await createSubjectAction(formData);
@@ -61,15 +66,24 @@ export function CreateSubjectForm({ levels }: { levels: Level[] }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" placeholder="mathematics" required />
+            <Input id="name" value={slug || "—"} readOnly disabled tabIndex={-1} className="font-mono text-xs" />
+            <input type="hidden" name="name" value={slug} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="displayName">Display Name</Label>
-            <Input id="displayName" name="displayName" placeholder="Mathematics" required />
+            <Input id="displayName" name="displayName" placeholder="Mathematics" required
+              value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="slug">Slug</Label>
-            <Input id="slug" name="slug" placeholder="mathematics" required />
+            {/* Generated from the display name — the slug is part of the URL the engine
+                resolves, and hand-typing it produced both "IAE" and "iae" in the tree. */}
+            <Input id="slug" value={slug || "—"} readOnly disabled tabIndex={-1}
+              aria-describedby="slug-hint" className="font-mono text-xs" />
+            <p id="slug-hint" className="text-xs text-muted-foreground">
+              Generated from the display name; a clash is resolved automatically.
+            </p>
+            <input type="hidden" name="slug" value={slug} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="metadata">Metadata (JSON)</Label>
