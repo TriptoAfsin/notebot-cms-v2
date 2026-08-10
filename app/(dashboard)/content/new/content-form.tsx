@@ -61,12 +61,15 @@ export function ContentForm({
   departments,
   noteKinds,
   batches,
+  initialTopicName = "",
 }: {
   levels: Level[];
   /** from the shared taxonomy — see lib/taxonomy.ts */
   departments: string[];
   noteKinds: string[];
   batches: string[];
+  /** prefills a new topic name — set when arriving from a missed search on /analytics */
+  initialTopicName?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -77,9 +80,12 @@ export function ContentForm({
   const [subjectId, setSubjectId] = useState("");
   const [subjectName, setSubjectName] = useState("");
 
-  const [topicMode, setTopicMode] = useState<"existing" | "new" | "none">("existing");
+  // A prefilled topic name only makes sense in "new" mode, so it also decides the starting mode.
+  const [topicMode, setTopicMode] = useState<"existing" | "new" | "none">(
+    initialTopicName ? "new" : "existing",
+  );
   const [topicId, setTopicId] = useState("");
-  const [topicName, setTopicName] = useState("");
+  const [topicName, setTopicName] = useState(initialTopicName);
 
   // Title is composed from parts rather than typed. Hand-typing is how the corpus ended up with
   // "Hand Note " (57 rows, trailing space) and batches written both "TME-51" and "TME51".

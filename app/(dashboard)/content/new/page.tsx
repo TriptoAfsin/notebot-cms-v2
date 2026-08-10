@@ -2,10 +2,18 @@ import { getLevelsAction } from "@/actions/levels.action";
 import { getTaxonomy } from "@/services/taxonomy.service";
 import { ContentForm } from "./content-form";
 
-export default async function NewContentPage() {
+export default async function NewContentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string }>;
+}) {
   // departments and note kinds come from the shared taxonomy, not a list baked into this form —
   // editing them in Settings has to change this dropdown too
-  const [levels, taxonomy] = await Promise.all([getLevelsAction(), getTaxonomy()]);
+  const [levels, taxonomy, sp] = await Promise.all([
+    getLevelsAction(),
+    getTaxonomy(),
+    searchParams,
+  ]);
 
   return (
     <div>
@@ -21,6 +29,7 @@ export default async function NewContentPage() {
         departments={taxonomy.departments}
         noteKinds={taxonomy.noteKinds}
         batches={taxonomy.batches}
+        initialTopicName={sp.topic?.slice(0, 200) ?? ""}
       />
     </div>
   );

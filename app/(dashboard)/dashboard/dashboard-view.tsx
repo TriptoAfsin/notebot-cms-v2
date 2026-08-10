@@ -1,273 +1,321 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FlushCacheButton } from "./flush-cache-button";
+import Link from "next/link";
 import {
-  Layers,
-  GraduationCap,
-  BookOpen,
-  FileText,
-  FlaskConical,
-  HelpCircle,
-  Calendar,
-  FileInput,
+  ArrowUpRight, BookOpen, Calendar, FileText, FlaskConical, GraduationCap,
+  HelpCircle, Layers, ScrollText, SearchX,
 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
 
-type DashboardData = {
-  stats: {
-    levels: number;
-    subjects: number;
-    topics: number;
-    notes: number;
-    labReports: number;
-    questionBanks: number;
-    routines: number;
-    submissions: number;
-  };
-  notesPerLevel: { name: string; notes: number }[];
-  subjectsPerLevel: { name: string; subjects: number }[];
-  submissionStatus: { name: string; value: number; fill: string }[];
-  recentSubmissions: {
-    id: number;
-    name: string;
-    subjectName: string;
-    topicName: string;
-    status: string;
-    createdAt: string;
-  }[];
-  deptData: { name: string; value: number }[];
-  contentBreakdown: { name: string; count: number }[];
+import { EvilAreaChart } from "@/components/evilcharts/charts/recharts-area-chart";
+import { EvilBarChart } from "@/components/evilcharts/charts/recharts-bar-chart";
+import { EvilPieChart } from "@/components/evilcharts/charts/recharts-pie-chart";
+import { EvilRadialChart } from "@/components/evilcharts/charts/recharts-radial-chart";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { DashboardData } from "@/services/dashboard.service";
+
+import {
+  contentMixConfig, cycleConfig, missedConfig, perLevelConfig, trafficConfig,
+} from "./chart-config";
+import { FlushCacheButton } from "./flush-cache-button";
+
+const ANALYTICS_URL = "https://analytics.butexnotebot.com/";
+
+const nf = new Intl.NumberFormat("en-US");
+const monthLabel = (m: string) => {
+  const [y, mo] = m.split("-");
+  return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][Number(mo) - 1]} ${y.slice(2)}`;
 };
 
-const DEPT_COLORS = [
-  "#8b5cf6",
-  "#f59e0b",
-  "#22c55e",
-  "#3b82f6",
-  "#ef4444",
-  "#ec4899",
-  "#14b8a6",
-  "#f97316",
-];
-
 export function DashboardView({ data }: { data: DashboardData }) {
-  const { stats } = data;
+  const { stats, analytics } = data;
 
-  const kpiCards = [
-    { title: "Levels", value: stats.levels, icon: Layers, color: "text-violet-500", bg: "bg-violet-50 dark:bg-violet-500/10" },
-    { title: "Subjects", value: stats.subjects, icon: GraduationCap, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-500/10" },
-    { title: "Topics", value: stats.topics, icon: BookOpen, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
-    { title: "Notes", value: stats.notes, icon: FileText, color: "text-sky-500", bg: "bg-sky-50 dark:bg-sky-500/10" },
-    { title: "Lab Reports", value: stats.labReports, icon: FlaskConical, color: "text-pink-500", bg: "bg-pink-50 dark:bg-pink-500/10" },
-    { title: "Q. Banks", value: stats.questionBanks, icon: HelpCircle, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-500/10" },
-    { title: "Routines", value: stats.routines, icon: Calendar, color: "text-teal-500", bg: "bg-teal-50 dark:bg-teal-500/10" },
-    { title: "Submissions", value: stats.submissions, icon: FileInput, color: "text-lime-500", bg: "bg-lime-50 dark:bg-lime-500/10" },
+  // Two rows of four: the content tree first, then the standalone resource tables.
+  const kpiRows = [
+    [
+      { title: "Levels", value: stats.levels, icon: Layers, tint: "text-violet-500", bg: "bg-violet-50 dark:bg-violet-500/10", href: "/levels" },
+      { title: "Subjects", value: stats.subjects, icon: GraduationCap, tint: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-500/10", href: "/subjects" },
+      { title: "Topics", value: stats.topics, icon: BookOpen, tint: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10", href: "/topics" },
+      { title: "Notes", value: stats.notes, icon: FileText, tint: "text-sky-500", bg: "bg-sky-50 dark:bg-sky-500/10", href: "/notes" },
+    ],
+    [
+      { title: "Lab Reports", value: stats.labReports, icon: FlaskConical, tint: "text-pink-500", bg: "bg-pink-50 dark:bg-pink-500/10", href: "/lab-reports" },
+      { title: "Q. Banks", value: stats.questionBanks, icon: HelpCircle, tint: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-500/10", href: "/question-banks" },
+      { title: "Routines", value: stats.routines, icon: Calendar, tint: "text-teal-500", bg: "bg-teal-50 dark:bg-teal-500/10", href: "/routines" },
+      { title: "Syllabuses", value: stats.syllabuses, icon: ScrollText, tint: "text-fuchsia-500", bg: "bg-fuchsia-50 dark:bg-fuchsia-500/10", href: "/syllabuses" },
+    ],
   ];
+
+  const deptConfig = cycleConfig(data.contentByDept.map((d) => d.dept));
+  const audienceConfig = cycleConfig((analytics?.audience ?? []).map((a) => a.dept));
+  const coveragePct = data.deptCoverage.total
+    ? Math.round((data.deptCoverage.tagged / data.deptCoverage.total) * 100)
+    : 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <FlushCacheButton />
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={ANALYTICS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-sm font-medium whitespace-nowrap transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            API analytics
+            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="sr-only">(opens analytics.butexnotebot.com in a new tab)</span>
+          </Link>
+          <FlushCacheButton />
+        </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-8">
-        {kpiCards.map((card) => (
-          <Card key={card.title} className="relative overflow-hidden">
-            <CardContent className="p-4">
-              <div className={`h-8 w-8 rounded-lg ${card.bg} flex items-center justify-center mb-2`}>
-                <card.icon className={`h-4 w-4 ${card.color}`} />
-              </div>
-              <div className="text-2xl font-bold">{card.value}</div>
-              <p className="text-xs text-muted-foreground">{card.title}</p>
-            </CardContent>
-          </Card>
+      {/* ---- KPIs, two rows ---- */}
+      <div className="space-y-3">
+        {kpiRows.map((row, i) => (
+          <div key={i} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {row.map((card) => (
+              <Link key={card.title} href={card.href} className="group focus-visible:outline-none">
+                <Card className="h-full transition-colors group-hover:border-foreground/20 group-focus-visible:ring-2 group-focus-visible:ring-ring">
+                  <CardContent className="p-4">
+                    <div className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg ${card.bg}`}>
+                      <card.icon className={`h-4 w-4 ${card.tint}`} aria-hidden="true" />
+                    </div>
+                    <div className="text-2xl font-bold tabular-nums">{nf.format(card.value)}</div>
+                    <p className="text-xs text-muted-foreground">{card.title}</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         ))}
       </div>
 
-      {/* Charts Row 1 */}
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        {/* Notes per Level */}
+      {/* ---- Traffic ---- */}
+      <Card>
+        <CardHeader className="flex-row items-start justify-between gap-3 pb-2">
+          <div className="min-w-0">
+            <CardTitle className="text-base font-semibold">Requests per month</CardTitle>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Last 12 months, web app vs Messenger bot
+            </p>
+          </div>
+          {analytics && (
+            <Link
+              href={ANALYTICS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 text-xs font-medium text-muted-foreground whitespace-nowrap hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              Full analytics <ArrowUpRight className="inline h-3 w-3" aria-hidden="true" />
+            </Link>
+          )}
+        </CardHeader>
+        <CardContent>
+          <div className="h-72 min-w-0">
+            {!analytics ? (
+              <Unavailable />
+            ) : (
+              <EvilAreaChart
+                className="h-full w-full"
+                data={analytics.traffic}
+                config={trafficConfig}
+                stackType="stacked"
+                xDataKey="month"
+              >
+                <EvilAreaChart.Grid />
+                <EvilAreaChart.XAxis dataKey="month" tickFormatter={monthLabel} />
+                <EvilAreaChart.YAxis tickFormatter={(v) => compact(Number(v))} />
+                <EvilAreaChart.Legend isClickable />
+                <EvilAreaChart.Tooltip variant="frosted-glass" />
+                <EvilAreaChart.Area dataKey="app" variant="gradient" isClickable>
+                  <EvilAreaChart.ActiveDot variant="colored-border" />
+                </EvilAreaChart.Area>
+                <EvilAreaChart.Area dataKey="bot" variant="gradient" isClickable>
+                  <EvilAreaChart.ActiveDot variant="colored-border" />
+                </EvilAreaChart.Area>
+              </EvilAreaChart>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ---- Content mix + per level ---- */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Notes per Level</CardTitle>
+            <CardTitle className="text-base font-semibold">Content mix</CardTitle>
+            <p className="mt-0.5 text-xs text-muted-foreground">Every published resource by type</p>
           </CardHeader>
           <CardContent>
-            <div className="h-64 min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.notesPerLevel} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} className="fill-muted-foreground" />
-                  <YAxis tick={{ fontSize: 12 }} className="fill-muted-foreground" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--color-card)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "8px",
-                      fontSize: "13px",
-                    }}
-                  />
-                  <Bar dataKey="notes" fill="#34d399" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-72 min-w-0">
+              <EvilPieChart
+                className="h-full w-full"
+                data={data.contentMix}
+                dataKey="value"
+                nameKey="kind"
+                config={contentMixConfig}
+              >
+                <EvilPieChart.Legend isClickable />
+                <EvilPieChart.Tooltip variant="frosted-glass" />
+                <EvilPieChart.Pie variant="gradient" innerRadius={58} cornerRadius={6} paddingAngle={3} isClickable />
+              </EvilPieChart>
             </div>
           </CardContent>
         </Card>
 
-        {/* Content Breakdown */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Content Breakdown</CardTitle>
+            <CardTitle className="text-base font-semibold">Depth per level</CardTitle>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Topics are the buttons students tap; notes are what sits behind them
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="h-64 min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.contentBreakdown} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} className="fill-muted-foreground" />
-                  <YAxis tick={{ fontSize: 12 }} className="fill-muted-foreground" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--color-card)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "8px",
-                      fontSize: "13px",
-                    }}
-                  />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                    {data.contentBreakdown.map((_, i) => (
-                      <Cell key={i} fill={["#3b82f6", "#ec4899", "#f97316", "#14b8a6"][i]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-72 min-w-0">
+              <EvilBarChart
+                className="h-full w-full"
+                data={data.perLevel}
+                config={perLevelConfig}
+                xDataKey="level"
+              >
+                <EvilBarChart.Grid />
+                <EvilBarChart.XAxis dataKey="level" />
+                <EvilBarChart.YAxis />
+                <EvilBarChart.Legend isClickable />
+                <EvilBarChart.Tooltip variant="frosted-glass" />
+                <EvilBarChart.Bar dataKey="notes" variant="duotone" radius={6} isClickable enableHoverHighlight />
+                <EvilBarChart.Bar dataKey="topics" variant="duotone" radius={6} isClickable enableHoverHighlight />
+              </EvilBarChart>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts Row 2 */}
-      <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
-        {/* Submission Status Pie */}
+      {/* ---- Departments: what we hold vs who reads it ---- */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Submission Status</CardTitle>
+            <CardTitle className="text-base font-semibold">Notes by department</CardTitle>
+            {/* A department chart that quietly speaks for a fifth of the corpus reads as though it
+                speaks for all of it, so the coverage is stated rather than implied. */}
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {nf.format(data.deptCoverage.tagged)} of {nf.format(data.deptCoverage.total)} notes
+              name a department ({coveragePct}%) — the rest are untagged
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="h-64 min-w-0">
-              {data.submissionStatus.every((s) => s.value === 0) ? (
-                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                  No submissions yet
-                </div>
+            <div className="h-72 min-w-0">
+              {data.contentByDept.length === 0 ? (
+                <Empty icon={FileText} text="No note carries a department yet" />
               ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={data.submissionStatus}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {data.submissionStatus.map((entry, i) => (
-                        <Cell key={i} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "var(--color-card)",
-                        border: "1px solid var(--color-border)",
-                        borderRadius: "8px",
-                        fontSize: "13px",
-                      }}
-                    />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: "13px" }} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <EvilBarChart
+                  className="h-full w-full"
+                  data={data.contentByDept}
+                  config={{ notes: { label: "Notes", colors: deptConfig[data.contentByDept[0].dept].colors } }}
+                  xDataKey="dept"
+                >
+                  <EvilBarChart.Grid />
+                  <EvilBarChart.XAxis dataKey="dept" />
+                  <EvilBarChart.YAxis />
+                  <EvilBarChart.Tooltip variant="frosted-glass" />
+                  <EvilBarChart.Bar dataKey="notes" variant="hatched" radius={6} isClickable enableHoverHighlight />
+                </EvilBarChart>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Submissions by Department */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Submissions by Department</CardTitle>
+            <CardTitle className="text-base font-semibold">Readers by department</CardTitle>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {analytics ? `${nf.format(analytics.totals.users)} registered app users` : "From the analytics schema"}
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="h-64 min-w-0">
-              {data.deptData.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                  No submissions yet
-                </div>
+            <div className="h-72 min-w-0">
+              {!analytics || analytics.audience.length === 0 ? (
+                <Unavailable />
               ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.deptData} layout="vertical" margin={{ top: 5, right: 10, left: 40, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis type="number" tick={{ fontSize: 12 }} className="fill-muted-foreground" />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} className="fill-muted-foreground" width={40} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "var(--color-card)",
-                        border: "1px solid var(--color-border)",
-                        borderRadius: "8px",
-                        fontSize: "13px",
-                      }}
-                    />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                      {data.deptData.map((_, i) => (
-                        <Cell key={i} fill={DEPT_COLORS[i % DEPT_COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                <EvilRadialChart
+                  className="h-full w-full"
+                  data={analytics.audience}
+                  nameKey="dept"
+                  config={audienceConfig}
+                  variant="full"
+                >
+                  <EvilRadialChart.Legend isClickable />
+                  <EvilRadialChart.Tooltip variant="frosted-glass" />
+                  <EvilRadialChart.RadialBar dataKey="users" isClickable />
+                </EvilRadialChart>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ---- Content gaps + the one submissions panel ---- */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold">Searched but not found</CardTitle>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Terms the bot could not match{analytics ? ` — ${nf.format(analytics.totals.misses)} misses logged` : ""}. Each one is a note worth adding.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80 min-w-0">
+              {!analytics || analytics.missed.length === 0 ? (
+                <Unavailable />
+              ) : (
+                <EvilBarChart
+                  className="h-full w-full"
+                  data={analytics.missed}
+                  config={missedConfig}
+                  layout="vertical"
+                  xDataKey="term"
+                >
+                  <EvilBarChart.Grid />
+                  <EvilBarChart.XAxis type="number" />
+                  <EvilBarChart.YAxis dataKey="term" type="category" width={110} />
+                  <EvilBarChart.Tooltip variant="frosted-glass" />
+                  <EvilBarChart.Bar dataKey="hits" variant="gradient" radius={5} isClickable enableHoverHighlight />
+                </EvilBarChart>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Recent Submissions */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Recent Submissions</CardTitle>
+          <CardHeader className="flex-row items-center justify-between gap-2 pb-2">
+            <CardTitle className="text-base font-semibold">Recent submissions</CardTitle>
+            {data.submissions.pending > 0 && (
+              <Badge className="shrink-0 bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400">
+                {data.submissions.pending} pending
+              </Badge>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="h-64 overflow-y-auto space-y-2">
-              {data.recentSubmissions.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                  No submissions yet
-                </div>
+            <div className="h-80 space-y-2 overflow-y-auto">
+              {data.submissions.recent.length === 0 ? (
+                <Empty icon={FileText} text="No submissions yet" />
               ) : (
-                data.recentSubmissions.map((sub) => (
-                  <div
+                data.submissions.recent.map((sub) => (
+                  <Link
                     key={sub.id}
-                    className="flex items-center justify-between gap-2 p-2 rounded-lg border bg-muted/30"
+                    href="/submissions"
+                    className="flex items-center justify-between gap-2 rounded-lg border bg-muted/30 p-2 transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{sub.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
+                      <p className="truncate text-sm font-medium">{sub.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
                         {sub.subjectName} &middot; {sub.topicName}
                       </p>
                     </div>
                     <StatusBadge status={sub.status} />
-                  </div>
+                  </Link>
                 ))
               )}
             </div>
@@ -278,25 +326,44 @@ export function DashboardView({ data }: { data: DashboardData }) {
   );
 }
 
+/** 4_015_931 → "4M" — axis ticks have no room for grouped digits. */
+function compact(n: number) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1)}M`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
+  return String(n);
+}
+
+function Empty({ icon: Icon, text }: { icon: typeof FileText; text: string }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+      <Icon className="h-5 w-5" aria-hidden="true" />
+      <p className="text-sm">{text}</p>
+    </div>
+  );
+}
+
+/** The analytics schema is owned by a separate service, so its absence is a state, not an error. */
+function Unavailable() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-muted-foreground">
+      <SearchX className="h-5 w-5" aria-hidden="true" />
+      <p className="text-sm">Analytics data unavailable</p>
+      <p className="max-w-xs text-xs">
+        The <code className="rounded bg-muted px-1">analytics</code> schema could not be read from
+        this database.
+      </p>
+    </div>
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case "approved":
-      return (
-        <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 shrink-0 text-[10px]">
-          Approved
-        </Badge>
-      );
-    case "rejected":
-      return (
-        <Badge className="bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 shrink-0 text-[10px]">
-          Rejected
-        </Badge>
-      );
-    default:
-      return (
-        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 shrink-0 text-[10px]">
-          Pending
-        </Badge>
-      );
-  }
+  const styles: Record<string, string> = {
+    approved: "bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400",
+    rejected: "bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400",
+    pending: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400",
+  };
+  const label = status.charAt(0).toUpperCase() + status.slice(1);
+  return (
+    <Badge className={`shrink-0 text-[10px] ${styles[status] ?? styles.pending}`}>{label}</Badge>
+  );
 }
