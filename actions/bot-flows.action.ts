@@ -25,12 +25,18 @@ import { validateBlocks } from "@/lib/block-limits";
 
 const PAGE_SIZE = 20;
 
-export async function getBotFlowsAction(filter: { q?: string; kind?: string; page?: number } = {}) {
+export async function getBotFlowsAction(
+  filter: { q?: string; kind?: string; status?: string; page?: number } = {}
+) {
   if (!(await requireUser())) return { rows: [], total: 0, page: 1, pageSize: PAGE_SIZE, kinds: [] };
 
   const page = Math.max(1, filter.page ?? 1);
   const where = and(
     filter.kind ? eq(botFlows.kind, filter.kind) : undefined,
+    // Only the two meaningful values filter; anything else is treated as "any", so a hand-typed
+    // ?status=foo shows everything rather than an empty table.
+    filter.status === "enabled" ? eq(botFlows.enabled, true) : undefined,
+    filter.status === "disabled" ? eq(botFlows.enabled, false) : undefined,
     filter.q
       ? or(ilike(botFlows.payload, `%${filter.q}%`), ilike(botFlows.label, `%${filter.q}%`))
       : undefined
@@ -41,6 +47,7 @@ export async function getBotFlowsAction(filter: { q?: string; kind?: string; pag
       .orderBy(asc(botFlows.kind), asc(botFlows.payload))
       .limit(PAGE_SIZE).offset((page - 1) * PAGE_SIZE),
     db.select({ n: count() }).from(botFlows).where(where),
+    // Counts deliberately ignore the *kind* filter — otherwise selecting one chip zeroes the rest.
     db.select({ kind: botFlows.kind, n: count() }).from(botFlows).groupBy(botFlows.kind).orderBy(asc(botFlows.kind)),
   ]);
 

@@ -2,20 +2,23 @@
 
 import { Link } from "next-view-transitions";
 import { useState, useTransition } from "react";
-import { AlertTriangle, ChevronLeft, ChevronRight, MessageSquare, SearchX } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, SearchX } from "lucide-react";
 import { toast } from "sonner";
 
-import { toggleBotFlowAction, updateBotFlowAction } from "@/actions/bot-flows.action";
-import { validateBlocks, type BlockIssue } from "@/lib/block-limits";
+import { toggleBotFlowAction } from "@/actions/bot-flows.action";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+
+import { EditPanel } from "./edit-panel";
 
 type Flow = {
   id: number;
@@ -122,6 +125,7 @@ export function BotFlowsView({
             </CardTitle>
             <form action="/bot-flows" method="get" className="flex w-full gap-2 sm:w-auto">
               {current.kind ? <input type="hidden" name="kind" value={current.kind} /> : null}
+              {current.status ? <input type="hidden" name="status" value={current.status} /> : null}
               <Input
                 name="q" defaultValue={current.q ?? ""} placeholder="Search payload or label…"
                 className="h-9 sm:w-64" aria-label="Search bot flows"
@@ -138,6 +142,22 @@ export function BotFlowsView({
                 <Button variant={current.kind === k.kind ? "default" : "outline"} size="sm">
                   {k.kind}
                   <span className="ml-1 text-[10px] opacity-70">{k.count}</span>
+                </Button>
+              </Link>
+            ))}
+          </div>
+          {/* Status is a separate axis from kind: a disabled flow is easy to lose among 274 rows,
+              and "what did we turn off?" is the question people actually come here with. */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">Status</span>
+            {([
+              { key: undefined, label: "Any" },
+              { key: "enabled", label: "Enabled" },
+              { key: "disabled", label: "Disabled" },
+            ] as const).map((s) => (
+              <Link key={s.label} href={qs({ status: s.key })}>
+                <Button variant={current.status === s.key ? "default" : "outline"} size="sm">
+                  {s.label}
                 </Button>
               </Link>
             ))}
@@ -221,132 +241,73 @@ export function BotFlowsView({
   );
 }
 
+/**
+ * Enable/disable.
+ *
+ * Disabling is confirmed, because it is the one action here that can silently remove content from
+ * students: the engine falls through to the content tables, and those may hold fewer links than the
+ * frozen flow does. Enabling needs no confirmation — it only ever adds a reply back.
+ *
+ * A disabled flow shows a destructive-tinted button rather than a neutral outline, so a row that is
+ * off is obvious at a glance instead of being distinguishable only by its label.
+ */
 function ToggleButton({ flow }: { flow: Flow }) {
   const [pending, start] = useTransition();
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      disabled={pending}
-      onClick={() =>
-        start(async () => {
-          const r = await toggleBotFlowAction(flow.id, !flow.enabled);
-          if (r?.success) toast.success(flow.enabled ? "Flow disabled" : "Flow enabled");
-          else toast.error("Could not change that flow");
-        })
-      }
-    >
-      {flow.enabled ? "Enabled" : "Disabled"}
-    </Button>
-  );
-}
+  const [confirming, setConfirming] = useState(false);
 
-/**
- * Editor.
- *
- * Blocks are edited as JSON because that is what they are — arbitrary Send API messages. The
- * validator runs on every keystroke against Meta's real limits, so a 21-character button title is
- * caught here rather than being silently cut when the bot sends it.
- */
-function EditPanel({ flow, onClose }: { flow: Flow; onClose: () => void }) {
-  const [json, setJson] = useState(() => JSON.stringify(flow.blocks, null, 2));
-  const [label, setLabel] = useState(flow.label ?? "");
-  const [kind, setKind] = useState(flow.kind);
-  const [enabled, setEnabled] = useState(flow.enabled);
-  const [pending, start] = useTransition();
-
-  let parseError: string | null = null;
-  let issues: BlockIssue[] = [];
-  try {
-    issues = validateBlocks(JSON.parse(json));
-  } catch (err) {
-    parseError = (err as Error).message;
-  }
-  const blocked = Boolean(parseError) || issues.length > 0;
-
-  const submit = () =>
+  const apply = (next: boolean) =>
     start(async () => {
-      const fd = new FormData();
-      fd.set("id", String(flow.id));
-      fd.set("label", label);
-      fd.set("kind", kind);
-      fd.set("enabled", enabled ? "true" : "false");
-      fd.set("blocks", json);
-      const r = await updateBotFlowAction(fd);
-      if (r?.success) {
-        toast.success("Flow saved — engine cache cleared");
-        onClose();
-      } else {
-        const e = (r as { error?: Record<string, string[]> })?.error;
-        toast.error(e?.blocks?.[0] ?? e?._form?.[0] ?? "Could not save that flow");
-      }
+      const r = await toggleBotFlowAction(flow.id, next);
+      if (r?.success) toast.success(next ? "Flow enabled" : "Flow disabled — engine cache cleared");
+      else toast.error("Could not change that flow");
+      setConfirming(false);
     });
 
+  if (!flow.enabled) {
+    return (
+      <Button variant="destructive" size="sm" disabled={pending}
+        title="This flow is off — the engine falls through to the content tables"
+        onClick={() => apply(true)}>
+        Disabled
+      </Button>
+    );
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
-      <Card className="max-h-[90vh] w-full max-w-3xl overflow-y-auto">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <MessageSquare className="h-4 w-4" aria-hidden="true" />
-            <span className="font-mono text-sm">{flow.payload}</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="bf-label">Label</Label>
-              <Input id="bf-label" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Usage instructions" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bf-kind">Kind</Label>
-              <Input id="bf-kind" value={kind} onChange={(e) => setKind(e.target.value)} />
-            </div>
-          </div>
-
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-            Enabled — when off, the engine falls through to the content tables, then to search
-          </label>
-
-          <div className="space-y-2">
-            <Label htmlFor="bf-blocks">Messenger blocks (JSON array)</Label>
-            <Textarea
-              id="bf-blocks"
-              value={json}
-              onChange={(e) => setJson(e.target.value)}
-              rows={16}
-              spellCheck={false}
-              className="font-mono text-xs"
-              aria-invalid={blocked || undefined}
-              aria-describedby="bf-blocks-status"
-            />
-            <div id="bf-blocks-status" aria-live="polite">
-              {parseError ? (
-                <p className="text-xs text-destructive">Not valid JSON — {parseError}</p>
-              ) : issues.length ? (
-                <ul className="space-y-0.5 text-xs text-destructive">
-                  {issues.slice(0, 6).map((i, n) => (
-                    <li key={n}><span className="font-mono">{i.path}</span> — {i.problem}</li>
-                  ))}
-                  {issues.length > 6 && <li>…and {issues.length - 6} more</li>}
-                </ul>
-              ) : (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                  Within Meta's limits — 20-char button titles, 3 buttons per template, 640-char
-                  template text.
+    <>
+      <Button variant="outline" size="sm" disabled={pending} onClick={() => setConfirming(true)}>
+        Enabled
+      </Button>
+      <AlertDialog open={confirming} onOpenChange={setConfirming}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Disable this flow?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  <span className="font-mono text-xs">{flow.payload}</span> will stop answering with
+                  its {flow.blockCount} message{flow.blockCount === 1 ? "" : "s"}.
                 </p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} disabled={pending}>Cancel</Button>
-            <Button onClick={submit} disabled={pending || blocked}>
-              {pending ? "Saving…" : "Save"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+                <p>
+                  The engine will fall through to the content tables and then to search. If those hold
+                  fewer links than this flow does,{" "}
+                  <strong className="text-foreground">students will see less than they do now</strong>.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pending}>Keep it on</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={pending}
+              onClick={(e) => { e.preventDefault(); apply(false); }}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {pending ? "Disabling…" : "Disable"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

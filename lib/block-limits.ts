@@ -22,6 +22,17 @@ export const BLOCK_LIMITS = {
 
 export type BlockIssue = { path: string; problem: string };
 
+/**
+ * Narrowing helpers.
+ *
+ * These blocks arrive as parsed JSON, so every field is genuinely `unknown` — casting to `any` would
+ * silence the type system exactly where the input is least trustworthy.
+ */
+type Obj = Record<string, unknown>;
+const asObj = (v: unknown): Obj | null => (v !== null && typeof v === "object" ? (v as Obj) : null);
+const asStr = (v: unknown): string | null => (typeof v === "string" ? v : null);
+const asArr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+
 export function validateBlocks(blocks: unknown): BlockIssue[] {
   const issues: BlockIssue[] = [];
   if (!Array.isArray(blocks)) return [{ path: "root", problem: "must be an array of message objects" }];
@@ -33,65 +44,71 @@ export function validateBlocks(blocks: unknown): BlockIssue[] {
       issues.push({ path: at, problem: "each entry must be a message object" });
       return;
     }
-    const b = block as Record<string, any>;
-    const hasText = typeof b.text === "string";
-    const hasAttachment = b.attachment && typeof b.attachment === "object";
-    if (!hasText && !hasAttachment) {
+    const b = block as Obj;
+    const text = asStr(b.text);
+    const attachment = asObj(b.attachment);
+    if (text === null && !attachment) {
       issues.push({ path: at, problem: "needs a `text` or an `attachment`" });
     }
-    if (hasText && b.text.length > BLOCK_LIMITS.text) {
-      issues.push({ path: `${at}.text`, problem: `${b.text.length} characters, max ${BLOCK_LIMITS.text}` });
+    if (text !== null && text.length > BLOCK_LIMITS.text) {
+      issues.push({ path: `${at}.text`, problem: `${text.length} characters, max ${BLOCK_LIMITS.text}` });
     }
 
-    if (Array.isArray(b.quick_replies)) {
-      if (b.quick_replies.length > BLOCK_LIMITS.quickReplies) {
+    const quickReplies = asArr(b.quick_replies);
+    if (quickReplies.length) {
+      if (quickReplies.length > BLOCK_LIMITS.quickReplies) {
         issues.push({
           path: `${at}.quick_replies`,
-          problem: `${b.quick_replies.length}, max ${BLOCK_LIMITS.quickReplies}`,
+          problem: `${quickReplies.length}, max ${BLOCK_LIMITS.quickReplies}`,
         });
       }
-      b.quick_replies.forEach((q: any, j: number) => {
-        if (typeof q?.title === "string" && q.title.length > BLOCK_LIMITS.quickReplyTitle) {
+      quickReplies.forEach((raw, j) => {
+        const title = asStr(asObj(raw)?.title);
+        if (title !== null && title.length > BLOCK_LIMITS.quickReplyTitle) {
           issues.push({
             path: `${at}.quick_replies[${j}].title`,
-            problem: `"${q.title}" is ${q.title.length} characters, max ${BLOCK_LIMITS.quickReplyTitle}`,
+            problem: `"${title}" is ${title.length} characters, max ${BLOCK_LIMITS.quickReplyTitle}`,
           });
         }
       });
     }
 
-    const tpl = b.attachment?.payload;
-    if (tpl && typeof tpl === "object") {
-      if (typeof tpl.text === "string" && tpl.text.length > BLOCK_LIMITS.templateText) {
+    const tpl = asObj(attachment?.payload);
+    if (tpl) {
+      const tplText = asStr(tpl.text);
+      if (tplText !== null && tplText.length > BLOCK_LIMITS.templateText) {
         issues.push({
           path: `${at}.attachment.payload.text`,
-          problem: `${tpl.text.length} characters, max ${BLOCK_LIMITS.templateText}`,
+          problem: `${tplText.length} characters, max ${BLOCK_LIMITS.templateText}`,
         });
       }
-      const buttons = Array.isArray(tpl.buttons) ? tpl.buttons : [];
+      const buttons = asArr(tpl.buttons);
       if (buttons.length > BLOCK_LIMITS.buttonsPerGroup) {
         issues.push({
           path: `${at}.attachment.payload.buttons`,
           problem: `${buttons.length} buttons — Meta shows only the first ${BLOCK_LIMITS.buttonsPerGroup}`,
         });
       }
-      buttons.forEach((btn: any, j: number) => {
-        if (typeof btn?.title === "string" && btn.title.length > BLOCK_LIMITS.buttonTitle) {
+      buttons.forEach((raw, j) => {
+        const btn = asObj(raw);
+        const title = asStr(btn?.title);
+        if (title !== null && title.length > BLOCK_LIMITS.buttonTitle) {
           issues.push({
             path: `${at}.buttons[${j}].title`,
-            problem: `"${btn.title}" is ${btn.title.length} characters, max ${BLOCK_LIMITS.buttonTitle}`,
+            problem: `"${title}" is ${title.length} characters, max ${BLOCK_LIMITS.buttonTitle}`,
           });
         }
-        if (btn?.type === "postback" && typeof btn.payload === "string" && btn.payload.length > BLOCK_LIMITS.payload) {
-          issues.push({ path: `${at}.buttons[${j}].payload`, problem: `${btn.payload.length} characters, max ${BLOCK_LIMITS.payload}` });
+        const payload = asStr(btn?.payload);
+        if (btn?.type === "postback" && payload !== null && payload.length > BLOCK_LIMITS.payload) {
+          issues.push({ path: `${at}.buttons[${j}].payload`, problem: `${payload.length} characters, max ${BLOCK_LIMITS.payload}` });
         }
       });
 
       // Generic-template cards carry their own titles.
-      const elements = Array.isArray(tpl.elements) ? tpl.elements : [];
-      elements.forEach((el: any, j: number) => {
-        if (typeof el?.title === "string" && el.title.length > BLOCK_LIMITS.cardTitle) {
-          issues.push({ path: `${at}.elements[${j}].title`, problem: `${el.title.length} characters, max ${BLOCK_LIMITS.cardTitle}` });
+      asArr(tpl.elements).forEach((raw, j) => {
+        const title = asStr(asObj(raw)?.title);
+        if (title !== null && title.length > BLOCK_LIMITS.cardTitle) {
+          issues.push({ path: `${at}.elements[${j}].title`, problem: `${title.length} characters, max ${BLOCK_LIMITS.cardTitle}` });
         }
       });
     }

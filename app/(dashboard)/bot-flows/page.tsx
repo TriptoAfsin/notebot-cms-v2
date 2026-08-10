@@ -8,7 +8,7 @@ export const metadata = { title: "Bot Flows · NoteBot CMS" };
 export default async function BotFlowsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; kind?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; kind?: string; status?: string; page?: string }>;
 }) {
   if (!(await requireUser())) {
     return <p className="text-sm text-muted-foreground">Sign in to manage bot flows.</p>;
@@ -16,7 +16,10 @@ export default async function BotFlowsPage({
 
   const sp = await searchParams;
   const [data, retirable] = await Promise.all([
-    getBotFlowsAction({ q: sp.q, kind: sp.kind, page: sp.page ? parseInt(sp.page, 10) || 1 : 1 }),
+    getBotFlowsAction({
+      q: sp.q, kind: sp.kind, status: sp.status,
+      page: sp.page ? parseInt(sp.page, 10) || 1 : 1,
+    }),
     getRetirableFlowsAction(),
   ]);
 
