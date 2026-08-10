@@ -92,7 +92,10 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppSidebar() {
   return (
-    <aside className="w-60 border-r bg-card/80 backdrop-blur-sm min-h-screen py-4 flex flex-col">
+    // sticky + h-screen rather than min-h-screen: min-h-screen makes the sidebar as tall as the
+    // page, so it scrolled away on any view taller than the viewport. h-screen pins it to one
+    // viewport and overflow-y-auto lets the nav itself scroll when the list outgrows a short window.
+    <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col overflow-y-auto border-r bg-card/80 py-4 backdrop-blur-sm">
       <SidebarContent />
     </aside>
   );

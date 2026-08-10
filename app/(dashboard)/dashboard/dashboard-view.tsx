@@ -9,9 +9,9 @@ import {
 import { EvilAreaChart } from "@/components/evilcharts/charts/recharts-area-chart";
 import { EvilBarChart } from "@/components/evilcharts/charts/recharts-bar-chart";
 import { EvilPieChart } from "@/components/evilcharts/charts/recharts-pie-chart";
-import { EvilRadialChart } from "@/components/evilcharts/charts/recharts-radial-chart";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toSlug } from "@/lib/slug";
 import type { DashboardData } from "@/services/dashboard.service";
 
 import {
@@ -47,7 +47,20 @@ export function DashboardView({ data }: { data: DashboardData }) {
   ];
 
   const deptConfig = cycleConfig(data.contentByDept.map((d) => d.dept));
-  const audienceConfig = cycleConfig((analytics?.audience ?? []).map((a) => a.dept));
+
+  // EvilCharts builds SVG gradient ids straight from the nameKey value — `url(#…-colors-BUTEX
+  // Affiliate)` — so any category containing a space silently renders black with no legend swatch.
+  // Slug the key, keep the human label in the config.
+  const audience = (analytics?.audience ?? []).map((a) => ({
+    key: toSlug(a.dept) || "unknown",
+    label: a.dept,
+    users: a.users,
+  }));
+  const audienceLabels = new Map(audience.map((a) => [a.key, a.label]));
+  const audienceConfig = cycleConfig(
+    audience.map((a) => a.key),
+    (k) => audienceLabels.get(k) ?? k,
+  );
   const coveragePct = data.deptCoverage.total
     ? Math.round((data.deptCoverage.tagged / data.deptCoverage.total) * 100)
     : 0;
@@ -77,13 +90,21 @@ export function DashboardView({ data }: { data: DashboardData }) {
           <div key={i} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {row.map((card) => (
               <Link key={card.title} href={card.href} className="group focus-visible:outline-none">
-                <Card className="h-full transition-colors group-hover:border-foreground/20 group-focus-visible:ring-2 group-focus-visible:ring-ring">
-                  <CardContent className="p-4">
-                    <div className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg ${card.bg}`}>
-                      <card.icon className={`h-4 w-4 ${card.tint}`} aria-hidden="true" />
+                {/* py-2.5 overrides Card's built-in py-6 — with it, eight tiles cost ~220px of
+                    vertical space before a single chart is visible. */}
+                <Card className="h-full py-2.5 transition-colors group-hover:border-foreground/20 group-focus-visible:ring-2 group-focus-visible:ring-ring">
+                  <CardContent className="flex items-center gap-2.5 px-3">
+                    <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${card.bg}`}>
+                      <card.icon className={`h-3.5 w-3.5 ${card.tint}`} aria-hidden="true" />
                     </div>
-                    <div className="text-2xl font-bold tabular-nums">{nf.format(card.value)}</div>
-                    <p className="text-xs text-muted-foreground">{card.title}</p>
+                    <div className="min-w-0">
+                      <div className="text-lg leading-tight font-bold tabular-nums">
+                        {nf.format(card.value)}
+                      </div>
+                      <p className="truncate text-[11px] leading-tight text-muted-foreground">
+                        {card.title}
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               </Link>
@@ -239,17 +260,21 @@ export function DashboardView({ data }: { data: DashboardData }) {
               {!analytics || analytics.audience.length === 0 ? (
                 <Unavailable />
               ) : (
-                <EvilRadialChart
+                // A radial chart was unreadable here: "BUTEX Affiliate" is a 2,716-user catch-all
+                // against departments of 100–350, so every real department collapsed to a sliver.
+                // A pie carries a single dominant share legibly, and the solid centre keeps it
+                // visually distinct from the Content-mix donut above.
+                <EvilPieChart
                   className="h-full w-full"
-                  data={analytics.audience}
-                  nameKey="dept"
+                  data={audience}
+                  dataKey="users"
+                  nameKey="key"
                   config={audienceConfig}
-                  variant="full"
                 >
-                  <EvilRadialChart.Legend isClickable />
-                  <EvilRadialChart.Tooltip variant="frosted-glass" />
-                  <EvilRadialChart.RadialBar dataKey="users" isClickable />
-                </EvilRadialChart>
+                  <EvilPieChart.Legend isClickable />
+                  <EvilPieChart.Tooltip variant="frosted-glass" />
+                  <EvilPieChart.Pie variant="gradient" cornerRadius={4} paddingAngle={2} isClickable />
+                </EvilPieChart>
               )}
             </div>
           </CardContent>
@@ -270,16 +295,21 @@ export function DashboardView({ data }: { data: DashboardData }) {
               {!analytics || analytics.missed.length === 0 ? (
                 <Unavailable />
               ) : (
+                // EvilCharts inverts Recharts' `layout`: "horizontal" means the bars run
+                // horizontally (Recharts layout="vertical"). It also infers each axis type from
+                // that, so passing type= by hand fights it and yields a chart with no bars.
                 <EvilBarChart
                   className="h-full w-full"
                   data={analytics.missed}
                   config={missedConfig}
-                  layout="vertical"
+                  layout="horizontal"
                   xDataKey="term"
                 >
                   <EvilBarChart.Grid />
-                  <EvilBarChart.XAxis type="number" />
-                  <EvilBarChart.YAxis dataKey="term" type="category" width={110} />
+                  <EvilBarChart.XAxis />
+                  {/* interval={0} — the default minTickGap silently labelled only every other
+                      bar, which on a ranked list makes the unlabelled ones unreadable. */}
+                  <EvilBarChart.YAxis dataKey="term" width={112} interval={0} />
                   <EvilBarChart.Tooltip variant="frosted-glass" />
                   <EvilBarChart.Bar dataKey="hits" variant="gradient" radius={5} isClickable enableHoverHighlight />
                 </EvilBarChart>

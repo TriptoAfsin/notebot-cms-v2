@@ -10,8 +10,9 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex min-h-screen">
-      {/* Desktop sidebar */}
-      <div className="hidden md:block">
+      {/* Desktop sidebar. self-stretch is what gives the sticky aside inside room to travel —
+          without it this wrapper is only as tall as the aside and sticky has no effect. */}
+      <div className="hidden self-stretch md:block">
         <AppSidebar />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
