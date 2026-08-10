@@ -9,6 +9,7 @@ export { results } from "./results";
 export { syllabuses } from "./syllabuses";
 export { auditLogs } from "./audit-logs";
 export { apiKeys } from "./api-keys";
+export { webhooks, webhookDeliveries } from "./webhooks";
 export { invitations } from "./invitations";
 export { noteSubmissions } from "./note-submissions";
 export { appSettings } from "./app-settings";

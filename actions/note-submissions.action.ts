@@ -6,6 +6,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import * as submissionService from "@/services/note-submissions.service";
 import { sendSubmissionAcknowledgement, sendSubmissionReviewNotification, sendNewSubmissionNotification } from "@/lib/email";
+import { dispatchWebhooks } from "@/lib/webhooks";
 
 async function getSession() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -52,7 +53,20 @@ export async function createSubmission(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
-  await submissionService.create(parsed.data);
+  const created = await submissionService.create(parsed.data);
+
+  // Push the same event to any registered endpoint. Not awaited and never able to throw — a
+  // student's submission must not be rejected because someone's webhook is down.
+  void dispatchWebhooks("submission.created", {
+    id: created?.id ?? null,
+    name: parsed.data.name,
+    batch: parsed.data.batch,
+    department: parsed.data.department,
+    level: parsed.data.level,
+    subjectName: parsed.data.subjectName,
+    topicName: parsed.data.topicName,
+    noteLink: parsed.data.noteLink,
+  });
 
   // Send acknowledgement email if contactInfo looks like an email
   if (parsed.data.contactInfo.includes("@")) {
@@ -114,6 +128,20 @@ export async function reviewSubmission(formData: FormData) {
     reviewedBy: session.user.id,
     reviewNote: parsed.data.reviewNote,
   });
+
+  void dispatchWebhooks(
+    parsed.data.status === "approved" ? "submission.approved" : "submission.rejected",
+    {
+      id: parsed.data.id,
+      status: parsed.data.status,
+      reviewNote: parsed.data.reviewNote ?? null,
+      reviewedBy: session.user.email ?? session.user.id,
+      name: submission?.name ?? null,
+      subjectName: submission?.subjectName ?? null,
+      topicName: submission?.topicName ?? null,
+      noteLink: submission?.noteLink ?? null,
+    }
+  );
 
   // Send review notification if contactInfo looks like an email
   if (submission && submission.contactInfo.includes("@")) {

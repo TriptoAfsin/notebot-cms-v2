@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
@@ -87,9 +87,11 @@ export async function createContentAction(formData: FormData) {
       let createdSubject = false;
 
       if (d.subjectMode === "new") {
-        // slugs are not unique in the DB, so guard here or the engine picks nondeterministically
+        // Slugs are not unique in the DB, so guard here or the engine picks nondeterministically.
+        // Compared case-insensitively: the engine resolves slugs that way, so "FPC" and "fpc"
+        // would collide at read time even though an exact compare sees two distinct rows.
         const clash = await tx.select({ id: subjects.id }).from(subjects)
-          .where(and(eq(subjects.levelId, d.levelId), eq(subjects.slug, d.subjectSlug!)));
+          .where(and(eq(subjects.levelId, d.levelId), sql`lower(${subjects.slug}) = ${d.subjectSlug!.toLowerCase()}`));
         if (clash.length) throw new Error(`A subject with slug “${d.subjectSlug}” already exists in this level`);
 
         const [row] = await tx.insert(subjects).values({
@@ -114,7 +116,7 @@ export async function createContentAction(formData: FormData) {
 
       if (d.topicMode === "new") {
         const clash = await tx.select({ id: topics.id }).from(topics)
-          .where(and(eq(topics.subjectId, subjectId), eq(topics.slug, d.topicSlug!)));
+          .where(and(eq(topics.subjectId, subjectId), sql`lower(${topics.slug}) = ${d.topicSlug!.toLowerCase()}`));
         if (clash.length) throw new Error(`A topic with slug “${d.topicSlug}” already exists in this subject`);
 
         const [row] = await tx.insert(topics).values({

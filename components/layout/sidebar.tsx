@@ -19,6 +19,7 @@ import {
   History,
   KeyRound,
   ScrollText,
+  Webhook,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +40,7 @@ const navItems = [
   { href: "/submissions", label: "Submissions", icon: FileInput, color: "text-lime-600" },
   { href: "/audit", label: "Audit Log", icon: History, color: "text-slate-500" },
   { href: "/api-keys", label: "API Keys", icon: KeyRound, color: "text-zinc-500" },
+  { href: "/webhooks", label: "Webhooks", icon: Webhook, color: "text-purple-500" },
 ];
 
 export { navItems };
