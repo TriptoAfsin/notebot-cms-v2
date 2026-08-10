@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchableSelect } from "@/components/searchable-select";
-import { composeNoteTitle, DEPARTMENTS, NOTE_KINDS } from "@/lib/note-title";
+import { composeNoteTitle } from "@/lib/note-title";
 import { cn } from "@/lib/utils";
 import { ContentPreview } from "@/components/content-preview";
 
@@ -59,7 +59,18 @@ function Segmented<T extends string>({ value, onChange, options }: {
   );
 }
 
-export function ContentForm({ levels }: { levels: Level[] }) {
+export function ContentForm({
+  levels,
+  departments,
+  noteKinds,
+  batches,
+}: {
+  levels: Level[];
+  /** from the shared taxonomy — see lib/taxonomy.ts */
+  departments: string[];
+  noteKinds: string[];
+  batches: string[];
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Errors>({});
@@ -79,7 +90,7 @@ export function ContentForm({ levels }: { levels: Level[] }) {
 
   // Title is composed from parts rather than typed. Hand-typing is how the corpus ended up with
   // "Hand Note " (57 rows, trailing space) and batches written both "TME-51" and "TME51".
-  const [kind, setKind] = useState<string>(NOTE_KINDS[0]);
+  const [kind, setKind] = useState<string>(noteKinds[0] ?? "Hand Note");
   const [author, setAuthor] = useState("");
   const [department, setDepartment] = useState("");
   const [batch, setBatch] = useState("");
@@ -318,7 +329,7 @@ export function ContentForm({ levels }: { levels: Level[] }) {
                         onChange={(e) => setKind(e.target.value)}
                         className="h-9 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm"
                       >
-                        {NOTE_KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
+                        {noteKinds.map((k) => <option key={k} value={k}>{k}</option>)}
                       </select>
                     </div>
                     <div className="space-y-1">
@@ -336,12 +347,13 @@ export function ContentForm({ levels }: { levels: Level[] }) {
                         className="h-9 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm"
                       >
                         <option value="">—</option>
-                        {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+                        {departments.map((d) => <option key={d} value={d}>{d}</option>)}
                       </select>
                     </div>
                     <div className="space-y-1">
                       <Label htmlFor="batch" className="text-xs text-muted-foreground">Batch</Label>
-                      <Input id="batch" value={batch} onChange={(e) => setBatch(e.target.value)} placeholder="51" inputMode="numeric" />
+                      <Input id="batch" value={batch} onChange={(e) => setBatch(e.target.value)} placeholder="51" list="batch-options" />
+                      <datalist id="batch-options">{batches.map((b) => <option key={b} value={b} />)}</datalist>
                     </div>
                     <div className="space-y-1">
                       <Label htmlFor="year" className="text-xs text-muted-foreground">Year</Label>

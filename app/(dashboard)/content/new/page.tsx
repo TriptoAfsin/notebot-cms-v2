@@ -1,8 +1,11 @@
 import { getLevelsAction } from "@/actions/levels.action";
+import { getTaxonomy } from "@/services/taxonomy.service";
 import { ContentForm } from "./content-form";
 
 export default async function NewContentPage() {
-  const levels = await getLevelsAction();
+  // departments and note kinds come from the shared taxonomy, not a list baked into this form —
+  // editing them in Settings has to change this dropdown too
+  const [levels, taxonomy] = await Promise.all([getLevelsAction(), getTaxonomy()]);
 
   return (
     <div>
@@ -13,7 +16,12 @@ export default async function NewContentPage() {
           already exist.
         </p>
       </div>
-      <ContentForm levels={levels} />
+      <ContentForm
+        levels={levels}
+        departments={taxonomy.departments}
+        noteKinds={taxonomy.noteKinds}
+        batches={taxonomy.batches}
+      />
     </div>
   );
 }
