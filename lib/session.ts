@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import { headers } from "@/lib/request-headers";
 
 import { auth } from "@/lib/auth";
 

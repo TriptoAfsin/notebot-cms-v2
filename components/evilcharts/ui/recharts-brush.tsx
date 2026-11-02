@@ -1,4 +1,3 @@
-"use client";
 
 import { motion, useMotionValue, useMotionValueEvent, useSpring, useTransform } from "motion/react";
 import { ResponsiveContainer, AreaChart, Area, LineChart, Line, BarChart, Bar } from "recharts";

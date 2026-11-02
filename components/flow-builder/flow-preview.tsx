@@ -1,4 +1,3 @@
-"use client";
 
 import { BLOCK_LIMITS } from "@/lib/block-limits";
 import type { EditableBlock, EditableButton } from "@/lib/flow-blocks";

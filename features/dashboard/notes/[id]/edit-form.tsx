@@ -1,0 +1,133 @@
+
+import { useRouter } from "@/lib/navigation";
+import { useState } from "react";
+import { updateNoteAction } from "@/actions/notes.action";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SearchableSelect } from "@/components/searchable-select";
+import { toast } from "sonner";
+
+type Note = {
+  id: number;
+  topicId: number;
+  title: string;
+  url: string;
+  sortOrder: number;
+  metadata: Record<string, unknown> | null;
+};
+
+type Topic = {
+  id: number;
+  displayName: string;
+  subjectName: string | null;
+};
+
+export function EditNoteForm({ note, topics }: { note: Note; topics: Topic[] }) {
+  const router = useRouter();
+  const [topicId, setTopicId] = useState(String(note.topicId));
+
+  const topicOptions = topics.map((t) => ({
+    value: String(t.id),
+    label: t.subjectName ? `${t.subjectName} → ${t.displayName}` : t.displayName,
+  }));
+
+  const handleSubmit = async (formData: FormData) => {
+    formData.set("topicId", topicId);
+
+    // Build metadata JSON from individual fields
+    const metadata: Record<string, string | number> = {};
+    const author = formData.get("author") as string;
+    const year = formData.get("year") as string;
+    const department = formData.get("department") as string;
+    if (author) metadata.author = author;
+    if (year) metadata.year = parseInt(year);
+    if (department) metadata.department = department;
+
+    formData.delete("author");
+    formData.delete("year");
+    formData.delete("department");
+    if (Object.keys(metadata).length > 0) {
+      formData.set("metadata", JSON.stringify(metadata));
+    }
+
+    const result = await updateNoteAction(note.id, formData);
+    if (result.success) {
+      toast.success("Note updated");
+      router.push("/notes");
+    } else {
+      toast.error("Failed to update note");
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Note Details</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form action={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="topicId">Topic</Label>
+            <SearchableSelect
+              options={topicOptions}
+              value={topicId}
+              onValueChange={setTopicId}
+              placeholder="Select a topic"
+              searchPlaceholder="Search topics..."
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input id="title" name="title" defaultValue={note.title} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="url">URL</Label>
+            <Input id="url" name="url" type="url" defaultValue={note.url} required />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="author">Author</Label>
+              <Input
+                id="author"
+                name="author"
+                placeholder="Author name"
+                defaultValue={(note.metadata?.author as string) || ""}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="year">Year</Label>
+              <Input
+                id="year"
+                name="year"
+                type="number"
+                placeholder="2024"
+                defaultValue={(note.metadata?.year as number) || ""}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="department">Department</Label>
+              <Input
+                id="department"
+                name="department"
+                placeholder="CSE, EEE, etc."
+                defaultValue={(note.metadata?.department as string) || ""}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sortOrder">Sort Order</Label>
+            <Input id="sortOrder" name="sortOrder" type="number" defaultValue={note.sortOrder} />
+          </div>
+          <div className="flex gap-2">
+            <Button type="submit">Save Changes</Button>
+            <Button type="button" variant="outline" onClick={() => router.push("/notes")}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

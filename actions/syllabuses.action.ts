@@ -1,90 +1,65 @@
-"use server";
+// Server functions for syllabuses.action. Generated from the former Next.js Server Actions;
+// call signatures are unchanged. Implementations live in ./_impl/syllabuses.action.ts (server-only).
+import { createServerFn } from "@tanstack/react-start";
+import type * as Impl from "./_impl/syllabuses.action";
+import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import * as syllabusService from "@/services/syllabuses.service";
-import { invalidateSyllabusCache } from "@/services/cache";
-import { requireUser, UNAUTHORIZED } from "@/lib/session";
-import { logAudit, auditable } from "@/lib/audit";
+const createSyllabusAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/syllabuses.action");
+    return impl.createSyllabusAction(...(unpackArgs(data) as Parameters<typeof Impl.createSyllabusAction>));
+  });
+export const createSyllabusAction = (...args: Parameters<typeof Impl.createSyllabusAction>) =>
+  createSyllabusAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.createSyllabusAction>;
 
-const syllabusSchema = z.object({
-  batch: z.string().min(1).max(20),
-  // this is the url slug the bot routes on (/app/syllabus/45/ae) — keep it slug-safe
-  department: z.string().min(1).max(50).regex(/^[a-z0-9_-]+$/, "Lowercase letters, numbers, - and _ only"),
-  departmentName: z.string().min(1).max(100),
-  departmentSort: z.coerce.number().int().default(0),
-  topic: z.string().min(1).max(200),
-  url: z.string().url().max(1000),
-  sortOrder: z.coerce.number().int().default(0),
-  metadata: z.string().optional().transform(val => {
-    if (!val || val.trim() === '') return undefined;
-    try { return JSON.parse(val) as Record<string, unknown>; } catch { return undefined; }
-  }),
-});
+const updateSyllabusAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/syllabuses.action");
+    return impl.updateSyllabusAction(...(unpackArgs(data) as Parameters<typeof Impl.updateSyllabusAction>));
+  });
+export const updateSyllabusAction = (...args: Parameters<typeof Impl.updateSyllabusAction>) =>
+  updateSyllabusAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.updateSyllabusAction>;
 
-const readForm = (formData: FormData) => ({
-  batch: formData.get("batch"),
-  department: String(formData.get("department") ?? "").toLowerCase(),
-  departmentName: formData.get("departmentName"),
-  departmentSort: formData.get("departmentSort"),
-  topic: formData.get("topic"),
-  url: formData.get("url"),
-  sortOrder: formData.get("sortOrder"),
-  metadata: formData.get("metadata"),
-});
+const deleteSyllabusAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/syllabuses.action");
+    return impl.deleteSyllabusAction(...(unpackArgs(data) as Parameters<typeof Impl.deleteSyllabusAction>));
+  });
+export const deleteSyllabusAction = (...args: Parameters<typeof Impl.deleteSyllabusAction>) =>
+  deleteSyllabusAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.deleteSyllabusAction>;
 
-export async function createSyllabusAction(formData: FormData) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const parsed = syllabusSchema.safeParse(readForm(formData));
+const getSyllabusesAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/syllabuses.action");
+    return impl.getSyllabusesAction(...(unpackArgs(data) as Parameters<typeof Impl.getSyllabusesAction>));
+  });
+export const getSyllabusesAction = (...args: Parameters<typeof Impl.getSyllabusesAction>) =>
+  getSyllabusesAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getSyllabusesAction>;
 
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
+const getSyllabusBatchesAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/syllabuses.action");
+    return impl.getSyllabusBatchesAction(...(unpackArgs(data) as Parameters<typeof Impl.getSyllabusBatchesAction>));
+  });
+export const getSyllabusBatchesAction = (...args: Parameters<typeof Impl.getSyllabusBatchesAction>) =>
+  getSyllabusBatchesAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getSyllabusBatchesAction>;
 
-  const created = await syllabusService.createSyllabus(parsed.data);
-
-  await logAudit({ action: "create", entityType: "syllabus", entityId: created?.id, entityLabel: created?.topic, after: auditable(created) });
-  await invalidateSyllabusCache();
-  revalidatePath("/syllabuses");
-  return { success: true };
-}
-
-export async function updateSyllabusAction(id: number, formData: FormData) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const parsed = syllabusSchema.safeParse(readForm(formData));
-
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
-
-  const prev = await syllabusService.getSyllabusById(id);
-
-  const updated = await syllabusService.updateSyllabus(id, parsed.data);
-
-  await logAudit({ action: "update", entityType: "syllabus", entityId: id, entityLabel: updated?.topic ?? prev?.topic, before: auditable(prev), after: auditable(updated) });
-  await invalidateSyllabusCache();
-  revalidatePath("/syllabuses");
-  return { success: true };
-}
-
-export async function deleteSyllabusAction(id: number) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const removed = await syllabusService.getSyllabusById(id);
-  await syllabusService.deleteSyllabus(id);
-  await logAudit({ action: "delete", entityType: "syllabus", entityId: id, entityLabel: removed?.topic, before: auditable(removed) });
-  await invalidateSyllabusCache();
-  revalidatePath("/syllabuses");
-  return { success: true };
-}
-
-export async function getSyllabusesAction(batch?: string) {
-  return syllabusService.getSyllabuses(batch);
-}
-
-export async function getSyllabusBatchesAction() {
-  return syllabusService.getSyllabusBatches();
-}
-
-export async function getSyllabusByIdAction(id: number) {
-  return syllabusService.getSyllabusById(id);
-}
+const getSyllabusByIdAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/syllabuses.action");
+    return impl.getSyllabusByIdAction(...(unpackArgs(data) as Parameters<typeof Impl.getSyllabusByIdAction>));
+  });
+export const getSyllabusByIdAction = (...args: Parameters<typeof Impl.getSyllabusByIdAction>) =>
+  getSyllabusByIdAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getSyllabusByIdAction>;

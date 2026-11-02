@@ -1,86 +1,55 @@
-"use server";
+// Server functions for question-banks.action. Generated from the former Next.js Server Actions;
+// call signatures are unchanged. Implementations live in ./_impl/question-banks.action.ts (server-only).
+import { createServerFn } from "@tanstack/react-start";
+import type * as Impl from "./_impl/question-banks.action";
+import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import * as qbService from "@/services/question-banks.service";
-import { invalidateQBsCache } from "@/services/cache";
-import { requireUser, UNAUTHORIZED } from "@/lib/session";
-import { logAudit, auditable } from "@/lib/audit";
-
-const qbSchema = z.object({
-  levelId: z.coerce.number().int(),
-  subjectSlug: z.string().min(1).max(50),
-  title: z.string().min(1).max(500),
-  url: z.string().url().max(1000),
-  sortOrder: z.coerce.number().int().default(0),
-  metadata: z.string().optional().transform(val => {
-    if (!val || val.trim() === '') return undefined;
-    try { return JSON.parse(val) as Record<string, unknown>; } catch { return undefined; }
-  }),
-});
-
-export async function createQuestionBankAction(formData: FormData) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const parsed = qbSchema.safeParse({
-    levelId: formData.get("levelId"),
-    subjectSlug: formData.get("subjectSlug"),
-    title: formData.get("title"),
-    url: formData.get("url"),
-    sortOrder: formData.get("sortOrder"),
-    metadata: formData.get("metadata"),
+const createQuestionBankAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/question-banks.action");
+    return impl.createQuestionBankAction(...(unpackArgs(data) as Parameters<typeof Impl.createQuestionBankAction>));
   });
+export const createQuestionBankAction = (...args: Parameters<typeof Impl.createQuestionBankAction>) =>
+  createQuestionBankAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.createQuestionBankAction>;
 
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
-
-  const created = await qbService.createQuestionBank(parsed.data);
-
-  await logAudit({ action: "create", entityType: "question_bank", entityId: created?.id, entityLabel: created?.title, after: auditable(created) });
-  await invalidateQBsCache(parsed.data.levelId);
-  revalidatePath("/question-banks");
-  return { success: true };
-}
-
-export async function updateQuestionBankAction(id: number, formData: FormData) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const parsed = qbSchema.safeParse({
-    levelId: formData.get("levelId"),
-    subjectSlug: formData.get("subjectSlug"),
-    title: formData.get("title"),
-    url: formData.get("url"),
-    sortOrder: formData.get("sortOrder"),
-    metadata: formData.get("metadata"),
+const updateQuestionBankAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/question-banks.action");
+    return impl.updateQuestionBankAction(...(unpackArgs(data) as Parameters<typeof Impl.updateQuestionBankAction>));
   });
+export const updateQuestionBankAction = (...args: Parameters<typeof Impl.updateQuestionBankAction>) =>
+  updateQuestionBankAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.updateQuestionBankAction>;
 
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
+const deleteQuestionBankAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/question-banks.action");
+    return impl.deleteQuestionBankAction(...(unpackArgs(data) as Parameters<typeof Impl.deleteQuestionBankAction>));
+  });
+export const deleteQuestionBankAction = (...args: Parameters<typeof Impl.deleteQuestionBankAction>) =>
+  deleteQuestionBankAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.deleteQuestionBankAction>;
 
-  const prev = await qbService.getQuestionBankById(id);
+const getQuestionBanksAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/question-banks.action");
+    return impl.getQuestionBanksAction(...(unpackArgs(data) as Parameters<typeof Impl.getQuestionBanksAction>));
+  });
+export const getQuestionBanksAction = (...args: Parameters<typeof Impl.getQuestionBanksAction>) =>
+  getQuestionBanksAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getQuestionBanksAction>;
 
-  const updated = await qbService.updateQuestionBank(id, parsed.data);
-
-  await logAudit({ action: "update", entityType: "question_bank", entityId: id, entityLabel: updated?.title ?? prev?.title, before: auditable(prev), after: auditable(updated) });
-  await invalidateQBsCache(parsed.data.levelId);
-  revalidatePath("/question-banks");
-  return { success: true };
-}
-
-export async function deleteQuestionBankAction(id: number, levelId: number) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const removed = await qbService.getQuestionBankById(id);
-  await qbService.deleteQuestionBank(id);
-  await logAudit({ action: "delete", entityType: "question_bank", entityId: id, entityLabel: removed?.title, before: auditable(removed) });
-  await invalidateQBsCache(levelId);
-  revalidatePath("/question-banks");
-  return { success: true };
-}
-
-export async function getQuestionBanksAction(levelId?: number) {
-  return qbService.getQuestionBanks(levelId);
-}
-
-export async function getQuestionBankByIdAction(id: number) {
-  return qbService.getQuestionBankById(id);
-}
+const getQuestionBankByIdAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/question-banks.action");
+    return impl.getQuestionBankByIdAction(...(unpackArgs(data) as Parameters<typeof Impl.getQuestionBankByIdAction>));
+  });
+export const getQuestionBankByIdAction = (...args: Parameters<typeof Impl.getQuestionBankByIdAction>) =>
+  getQuestionBankByIdAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getQuestionBankByIdAction>;

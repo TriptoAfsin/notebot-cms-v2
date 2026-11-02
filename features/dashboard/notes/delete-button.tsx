@@ -1,0 +1,12 @@
+
+import { DeleteDialog } from "@/components/delete-dialog";
+import { deleteNoteAction } from "@/actions/notes.action";
+
+export function DeleteNoteButton({ id, topicId }: { id: number; topicId: number }) {
+  return (
+    <DeleteDialog
+      itemName="Note"
+      onDelete={() => deleteNoteAction(id, topicId)}
+    />
+  );
+}

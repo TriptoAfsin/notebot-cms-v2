@@ -1,0 +1,35 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
+import { searchAsStrings, thenable } from "@/lib/route-helpers";
+import DashboardLoading from "@/features/dashboard/loading";
+import { getApiKeysAction } from "@/actions/api-keys.action";
+import { ApiKeysView } from "@/features/dashboard/api-keys/api-keys-view";
+
+
+// Data for this page. Runs on the server only (also during client-side navigation), so it may
+// call services directly. Ported from the Next.js server component's body.
+const loadPage = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data: __input }) => {
+    const { headers } = await import("@/lib/request-headers");
+    const [__params, __search] = unpackArgs(__input) as [Record<string, string>, Record<string, string>];
+    void __params; void __search;
+    const keys = await getApiKeysAction();
+    const h = await headers();
+    const host = h.get("host") ?? "cms.butexnotebot.com";
+    const proto = host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https";
+    return { keys, proto, host };
+  });
+
+export const Route = createFileRoute("/_dashboard/api-keys/")({
+  pendingComponent: DashboardLoading,
+  loader: ({ }) => loadPage({ data: packArgs([{}, {}]) }),
+  component: RouteComponent,
+});
+
+function RouteComponent() {
+  const { keys, proto, host } = Route.useLoaderData();
+  return <ApiKeysView keys={keys} baseUrl={`${proto}://${host}`} />;
+}

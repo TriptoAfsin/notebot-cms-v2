@@ -1,7 +1,6 @@
-"use client";
 
-import { Link } from "next-view-transitions";
-import { usePathname } from "next/navigation";
+import { Link } from "@/components/link";
+import { usePathname } from "@/lib/navigation";
 import {
   BookOpen,
   GraduationCap,

@@ -1,6 +1,5 @@
-"use client";
 
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "@/lib/navigation";
 import { useCallback } from "react";
 
 export function useQueryParam(key: string, defaultValue = "") {

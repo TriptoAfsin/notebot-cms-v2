@@ -1,171 +1,53 @@
-"use server";
+// Server functions for note-submissions.action. Generated from the former Next.js Server Actions;
+// call signatures are unchanged. Implementations live in ./_impl/note-submissions.action.ts (server-only).
+import { createServerFn } from "@tanstack/react-start";
+import type * as Impl from "./_impl/note-submissions.action";
+import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 
-import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { z } from "zod";
-import { auth } from "@/lib/auth";
-import * as submissionService from "@/services/note-submissions.service";
-import { sendSubmissionAcknowledgement, sendSubmissionReviewNotification, sendNewSubmissionNotification } from "@/lib/email";
-import { dispatchWebhooks } from "@/lib/webhooks";
-
-async function getSession() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  return session;
-}
-
-export async function getSubmissions(status?: string) {
-  const session = await getSession();
-  if (!session) return { error: "Unauthorized" };
-  return { data: await submissionService.getAll(status) };
-}
-
-const submissionSchema = z.object({
-  name: z.string().min(1, "Name is required").max(255),
-  batch: z.string().min(1, "Batch is required"),
-  department: z.string().min(1, "Department is required"),
-  level: z.string().min(1, "Level is required"),
-  subjectName: z.string().min(1, "Subject name is required").max(255),
-  topicName: z.string().min(1, "Topic name is required").max(255),
-  noteLink: z.string().url("Must be a valid URL").max(1000),
-  contactInfo: z.string().min(1, "Contact info is required").max(500),
-});
-
-export async function createSubmission(formData: FormData) {
-  // Honeypot check — bots auto-fill this hidden field, humans never do
-  const honeypot = formData.get("website");
-  if (honeypot) {
-    // Silently reject — don't reveal it's a bot check
-    return { success: true };
-  }
-
-  const parsed = submissionSchema.safeParse({
-    name: formData.get("name"),
-    batch: formData.get("batch"),
-    department: formData.get("department"),
-    level: formData.get("level"),
-    subjectName: formData.get("subjectName"),
-    topicName: formData.get("topicName"),
-    noteLink: formData.get("noteLink"),
-    contactInfo: formData.get("contactInfo"),
+const getSubmissions__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/note-submissions.action");
+    return impl.getSubmissions(...(unpackArgs(data) as Parameters<typeof Impl.getSubmissions>));
   });
+export const getSubmissions = (...args: Parameters<typeof Impl.getSubmissions>) =>
+  getSubmissions__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getSubmissions>;
 
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
-
-  const created = await submissionService.create(parsed.data);
-
-  // Push the same event to any registered endpoint. Not awaited and never able to throw — a
-  // student's submission must not be rejected because someone's webhook is down.
-  void dispatchWebhooks("submission.created", {
-    id: created?.id ?? null,
-    name: parsed.data.name,
-    batch: parsed.data.batch,
-    department: parsed.data.department,
-    level: parsed.data.level,
-    subjectName: parsed.data.subjectName,
-    topicName: parsed.data.topicName,
-    noteLink: parsed.data.noteLink,
+const createSubmission__server = createServerFn({ method: "POST" })
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/note-submissions.action");
+    return impl.createSubmission(...(unpackArgs(data) as Parameters<typeof Impl.createSubmission>));
   });
+export const createSubmission = (...args: Parameters<typeof Impl.createSubmission>) =>
+  createSubmission__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.createSubmission>;
 
-  // Send acknowledgement email if contactInfo looks like an email
-  if (parsed.data.contactInfo.includes("@")) {
-    const baseUrl = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000";
-    await sendSubmissionAcknowledgement({
-      to: parsed.data.contactInfo,
-      name: parsed.data.name,
-      subjectName: parsed.data.subjectName,
-      topicName: parsed.data.topicName,
-      trackUrl: `${baseUrl}/submit/track`,
-    }).catch(() => {});
-  }
-
-  // Notify admin via CONTACT_TO_EMAIL
-  const contactTo = process.env.CONTACT_TO_EMAIL;
-  if (contactTo) {
-    await sendNewSubmissionNotification({
-      to: contactTo,
-      ...parsed.data,
-    }).catch(() => {});
-  }
-
-  return { success: true };
-}
-
-export async function trackSubmissions(contactInfo: string) {
-  if (!contactInfo.trim()) {
-    return { error: "Contact info is required" };
-  }
-  const submissions = await submissionService.getByContact(contactInfo.trim());
-  return { data: submissions };
-}
-
-const reviewSchema = z.object({
-  id: z.coerce.number().int(),
-  status: z.enum(["approved", "rejected"]),
-  reviewNote: z.string().optional(),
-});
-
-export async function reviewSubmission(formData: FormData) {
-  const session = await getSession();
-  if (!session) return { error: "Unauthorized" };
-
-  const parsed = reviewSchema.safeParse({
-    id: formData.get("id"),
-    status: formData.get("status"),
-    reviewNote: formData.get("reviewNote"),
+const trackSubmissions__server = createServerFn({ method: "GET" })
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/note-submissions.action");
+    return impl.trackSubmissions(...(unpackArgs(data) as Parameters<typeof Impl.trackSubmissions>));
   });
+export const trackSubmissions = (...args: Parameters<typeof Impl.trackSubmissions>) =>
+  trackSubmissions__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.trackSubmissions>;
 
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
-
-  // Fetch submission before review to get contact info
-  const submission = await submissionService.getById(parsed.data.id);
-
-  await submissionService.review(parsed.data.id, {
-    status: parsed.data.status,
-    reviewedBy: session.user.id,
-    reviewNote: parsed.data.reviewNote,
+const reviewSubmission__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/note-submissions.action");
+    return impl.reviewSubmission(...(unpackArgs(data) as Parameters<typeof Impl.reviewSubmission>));
   });
+export const reviewSubmission = (...args: Parameters<typeof Impl.reviewSubmission>) =>
+  reviewSubmission__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.reviewSubmission>;
 
-  void dispatchWebhooks(
-    parsed.data.status === "approved" ? "submission.approved" : "submission.rejected",
-    {
-      id: parsed.data.id,
-      status: parsed.data.status,
-      reviewNote: parsed.data.reviewNote ?? null,
-      reviewedBy: session.user.email ?? session.user.id,
-      name: submission?.name ?? null,
-      subjectName: submission?.subjectName ?? null,
-      topicName: submission?.topicName ?? null,
-      noteLink: submission?.noteLink ?? null,
-    }
-  );
-
-  // Send review notification if contactInfo looks like an email
-  if (submission && submission.contactInfo.includes("@")) {
-    const baseUrl = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000";
-    await sendSubmissionReviewNotification({
-      to: submission.contactInfo,
-      name: submission.name,
-      subjectName: submission.subjectName,
-      topicName: submission.topicName,
-      status: parsed.data.status,
-      reviewNote: parsed.data.reviewNote,
-      trackUrl: `${baseUrl}/submit/track`,
-    }).catch(() => {});
-  }
-
-  revalidatePath("/submissions");
-  return { success: true };
-}
-
-export async function deleteSubmission(id: number) {
-  const session = await getSession();
-  if (!session) return { error: "Unauthorized" };
-
-  await submissionService.deleteById(id);
-  revalidatePath("/submissions");
-  return { success: true };
-}
+const deleteSubmission__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/note-submissions.action");
+    return impl.deleteSubmission(...(unpackArgs(data) as Parameters<typeof Impl.deleteSubmission>));
+  });
+export const deleteSubmission = (...args: Parameters<typeof Impl.deleteSubmission>) =>
+  deleteSubmission__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.deleteSubmission>;

@@ -1,4 +1,3 @@
-"use client";
 
 import * as RechartsPrimitive from "recharts";
 import { cn } from "@/lib/utils";

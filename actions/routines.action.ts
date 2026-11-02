@@ -1,89 +1,55 @@
-"use server";
+// Server functions for routines.action. Generated from the former Next.js Server Actions;
+// call signatures are unchanged. Implementations live in ./_impl/routines.action.ts (server-only).
+import { createServerFn } from "@tanstack/react-start";
+import type * as Impl from "./_impl/routines.action";
+import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import * as routineService from "@/services/routines.service";
-import { invalidateRoutinesCache } from "@/services/cache";
-import { requireUser, UNAUTHORIZED } from "@/lib/session";
-import { logAudit, auditable } from "@/lib/audit";
-
-const routineSchema = z.object({
-  levelId: z.coerce.number().int(),
-  term: z.string().max(50).optional(),
-  department: z.string().max(100).optional(),
-  title: z.string().min(1).max(500),
-  url: z.string().url().max(1000),
-  sortOrder: z.coerce.number().int().default(0),
-  metadata: z.string().optional().transform(val => {
-    if (!val || val.trim() === '') return undefined;
-    try { return JSON.parse(val) as Record<string, unknown>; } catch { return undefined; }
-  }),
-});
-
-export async function createRoutineAction(formData: FormData) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const parsed = routineSchema.safeParse({
-    levelId: formData.get("levelId"),
-    term: formData.get("term") || undefined,
-    department: formData.get("department") || undefined,
-    title: formData.get("title"),
-    url: formData.get("url"),
-    sortOrder: formData.get("sortOrder"),
-    metadata: formData.get("metadata"),
+const createRoutineAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/routines.action");
+    return impl.createRoutineAction(...(unpackArgs(data) as Parameters<typeof Impl.createRoutineAction>));
   });
+export const createRoutineAction = (...args: Parameters<typeof Impl.createRoutineAction>) =>
+  createRoutineAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.createRoutineAction>;
 
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
-
-  const created = await routineService.createRoutine(parsed.data);
-
-  await logAudit({ action: "create", entityType: "routine", entityId: created?.id, entityLabel: created?.title, after: auditable(created) });
-  await invalidateRoutinesCache();
-  revalidatePath("/routines");
-  return { success: true };
-}
-
-export async function updateRoutineAction(id: number, formData: FormData) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const parsed = routineSchema.safeParse({
-    levelId: formData.get("levelId"),
-    term: formData.get("term") || undefined,
-    department: formData.get("department") || undefined,
-    title: formData.get("title"),
-    url: formData.get("url"),
-    sortOrder: formData.get("sortOrder"),
-    metadata: formData.get("metadata"),
+const updateRoutineAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/routines.action");
+    return impl.updateRoutineAction(...(unpackArgs(data) as Parameters<typeof Impl.updateRoutineAction>));
   });
+export const updateRoutineAction = (...args: Parameters<typeof Impl.updateRoutineAction>) =>
+  updateRoutineAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.updateRoutineAction>;
 
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
+const deleteRoutineAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/routines.action");
+    return impl.deleteRoutineAction(...(unpackArgs(data) as Parameters<typeof Impl.deleteRoutineAction>));
+  });
+export const deleteRoutineAction = (...args: Parameters<typeof Impl.deleteRoutineAction>) =>
+  deleteRoutineAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.deleteRoutineAction>;
 
-  const prev = await routineService.getRoutineById(id);
+const getRoutinesAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/routines.action");
+    return impl.getRoutinesAction(...(unpackArgs(data) as Parameters<typeof Impl.getRoutinesAction>));
+  });
+export const getRoutinesAction = (...args: Parameters<typeof Impl.getRoutinesAction>) =>
+  getRoutinesAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getRoutinesAction>;
 
-  const updated = await routineService.updateRoutine(id, parsed.data);
-
-  await logAudit({ action: "update", entityType: "routine", entityId: id, entityLabel: updated?.title ?? prev?.title, before: auditable(prev), after: auditable(updated) });
-  await invalidateRoutinesCache();
-  revalidatePath("/routines");
-  return { success: true };
-}
-
-export async function deleteRoutineAction(id: number) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const removed = await routineService.getRoutineById(id);
-  await routineService.deleteRoutine(id);
-  await logAudit({ action: "delete", entityType: "routine", entityId: id, entityLabel: removed?.title, before: auditable(removed) });
-  await invalidateRoutinesCache();
-  revalidatePath("/routines");
-  return { success: true };
-}
-
-export async function getRoutinesAction() {
-  return routineService.getRoutines();
-}
-
-export async function getRoutineByIdAction(id: number) {
-  return routineService.getRoutineById(id);
-}
+const getRoutineByIdAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/routines.action");
+    return impl.getRoutineByIdAction(...(unpackArgs(data) as Parameters<typeof Impl.getRoutineByIdAction>));
+  });
+export const getRoutineByIdAction = (...args: Parameters<typeof Impl.getRoutineByIdAction>) =>
+  getRoutineByIdAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getRoutineByIdAction>;

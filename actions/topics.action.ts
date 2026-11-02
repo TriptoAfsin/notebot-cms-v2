@@ -1,91 +1,55 @@
-"use server";
+// Server functions for topics.action. Generated from the former Next.js Server Actions;
+// call signatures are unchanged. Implementations live in ./_impl/topics.action.ts (server-only).
+import { createServerFn } from "@tanstack/react-start";
+import type * as Impl from "./_impl/topics.action";
+import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import * as topicService from "@/services/topics.service";
-import { invalidateTopicsCache } from "@/services/cache";
-import { requireUser, UNAUTHORIZED } from "@/lib/session";
-import { logAudit, auditable } from "@/lib/audit";
-
-const topicSchema = z.object({
-  subjectId: z.coerce.number().int(),
-  name: z.string().min(1).max(100),
-  displayName: z.string().min(1).max(200),
-  slug: z.string().min(1).max(100),
-  sortOrder: z.coerce.number().int().default(0),
-  metadata: z.string().optional().transform(val => {
-    if (!val || val.trim() === '') return undefined;
-    try { return JSON.parse(val) as Record<string, unknown>; } catch { return undefined; }
-  }),
-});
-
-export async function createTopicAction(formData: FormData) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const parsed = topicSchema.safeParse({
-    subjectId: formData.get("subjectId"),
-    name: formData.get("name"),
-    displayName: formData.get("displayName"),
-    slug: formData.get("slug"),
-    sortOrder: formData.get("sortOrder"),
-    metadata: formData.get("metadata"),
+const createTopicAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/topics.action");
+    return impl.createTopicAction(...(unpackArgs(data) as Parameters<typeof Impl.createTopicAction>));
   });
+export const createTopicAction = (...args: Parameters<typeof Impl.createTopicAction>) =>
+  createTopicAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.createTopicAction>;
 
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
-
-  const created = await topicService.createTopic(parsed.data);
-
-  await logAudit({ action: "create", entityType: "topic", entityId: created?.id, entityLabel: created?.displayName, after: auditable(created) });
-  await invalidateTopicsCache(parsed.data.subjectId);
-  revalidatePath("/topics");
-  return { success: true };
-}
-
-export async function updateTopicAction(id: number, formData: FormData) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const parsed = topicSchema.safeParse({
-    subjectId: formData.get("subjectId"),
-    name: formData.get("name"),
-    displayName: formData.get("displayName"),
-    slug: formData.get("slug"),
-    sortOrder: formData.get("sortOrder"),
-    metadata: formData.get("metadata"),
+const updateTopicAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/topics.action");
+    return impl.updateTopicAction(...(unpackArgs(data) as Parameters<typeof Impl.updateTopicAction>));
   });
+export const updateTopicAction = (...args: Parameters<typeof Impl.updateTopicAction>) =>
+  updateTopicAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.updateTopicAction>;
 
-  if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
-  }
+const deleteTopicAction__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/topics.action");
+    return impl.deleteTopicAction(...(unpackArgs(data) as Parameters<typeof Impl.deleteTopicAction>));
+  });
+export const deleteTopicAction = (...args: Parameters<typeof Impl.deleteTopicAction>) =>
+  deleteTopicAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.deleteTopicAction>;
 
-  // one read serves both purposes: the audit "before" snapshot, and detecting a move so the
-  // subject the topic left also gets its cache busted
-  const before = await topicService.getTopicById(id);
+const getTopicsAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/topics.action");
+    return impl.getTopicsAction(...(unpackArgs(data) as Parameters<typeof Impl.getTopicsAction>));
+  });
+export const getTopicsAction = (...args: Parameters<typeof Impl.getTopicsAction>) =>
+  getTopicsAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getTopicsAction>;
 
-  const updated = await topicService.updateTopic(id, parsed.data);
-
-  await logAudit({ action: "update", entityType: "topic", entityId: id, entityLabel: updated?.displayName ?? before?.displayName, before: auditable(before), after: auditable(updated) });
-  await invalidateTopicsCache(parsed.data.subjectId);
-  if (before && before.subjectId !== parsed.data.subjectId) {
-    await invalidateTopicsCache(before.subjectId);
-  }
-  revalidatePath("/topics");
-  return { success: true };
-}
-
-export async function deleteTopicAction(id: number, subjectId: number) {
-  if (!(await requireUser())) return UNAUTHORIZED;
-  const removed = await topicService.getTopicById(id);
-  await topicService.deleteTopic(id);
-  await logAudit({ action: "delete", entityType: "topic", entityId: id, entityLabel: removed?.displayName, before: auditable(removed) });
-  await invalidateTopicsCache(subjectId);
-  revalidatePath("/topics");
-  return { success: true };
-}
-
-export async function getTopicsAction(subjectId?: number) {
-  return topicService.getTopics(subjectId);
-}
-
-export async function getTopicByIdAction(id: number) {
-  return topicService.getTopicById(id);
-}
+const getTopicByIdAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/topics.action");
+    return impl.getTopicByIdAction(...(unpackArgs(data) as Parameters<typeof Impl.getTopicByIdAction>));
+  });
+export const getTopicByIdAction = (...args: Parameters<typeof Impl.getTopicByIdAction>) =>
+  getTopicByIdAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getTopicByIdAction>;

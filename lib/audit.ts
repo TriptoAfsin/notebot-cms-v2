@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import { headers } from "@/lib/request-headers";
 
 import { db } from "@/lib/db";
 import { auditLogs } from "@/lib/db/schema";

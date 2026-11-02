@@ -1,30 +1,25 @@
-"use server";
+// Server functions for users.action. Generated from the former Next.js Server Actions;
+// call signatures are unchanged. Implementations live in ./_impl/users.action.ts (server-only).
+import { createServerFn } from "@tanstack/react-start";
+import type * as Impl from "./_impl/users.action";
+import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 
-import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import * as userService from "@/services/users.service";
+const getUsers__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/users.action");
+    return impl.getUsers(...(unpackArgs(data) as Parameters<typeof Impl.getUsers>));
+  });
+export const getUsers = (...args: Parameters<typeof Impl.getUsers>) =>
+  getUsers__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getUsers>;
 
-async function getSession() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  return session;
-}
-
-export async function getUsers() {
-  const session = await getSession();
-  if (!session) return { error: "Unauthorized" };
-  return { data: await userService.getAll() };
-}
-
-export async function deleteUser(id: string) {
-  const session = await getSession();
-  if (!session) return { error: "Unauthorized" };
-
-  if (session.user.id === id) {
-    return { error: "Cannot delete your own account" };
-  }
-
-  await userService.deleteById(id);
-  revalidatePath("/users");
-  return { success: true };
-}
+const deleteUser__server = createServerFn({ method: "POST" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/users.action");
+    return impl.deleteUser(...(unpackArgs(data) as Parameters<typeof Impl.deleteUser>));
+  });
+export const deleteUser = (...args: Parameters<typeof Impl.deleteUser>) =>
+  deleteUser__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.deleteUser>;

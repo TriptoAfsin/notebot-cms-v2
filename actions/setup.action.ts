@@ -1,69 +1,23 @@
-"use server";
+// Server functions for setup.action. Generated from the former Next.js Server Actions;
+// call signatures are unchanged. Implementations live in ./_impl/setup.action.ts (server-only).
+import { createServerFn } from "@tanstack/react-start";
+import type * as Impl from "./_impl/setup.action";
+import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 
-import { z } from "zod";
-import { Pool } from "pg";
-import { hashPassword } from "better-auth/crypto";
-import crypto from "crypto";
+const checkSuperAdminExists__server = createServerFn({ method: "GET" })
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/setup.action");
+    return impl.checkSuperAdminExists(...(unpackArgs(data) as Parameters<typeof Impl.checkSuperAdminExists>));
+  });
+export const checkSuperAdminExists = (...args: Parameters<typeof Impl.checkSuperAdminExists>) =>
+  checkSuperAdminExists__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.checkSuperAdminExists>;
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_PUBLIC_URL,
-});
-
-export async function checkSuperAdminExists() {
-  const result = await pool.query(
-    `SELECT id FROM "user" WHERE role = 'admin' LIMIT 1`
-  );
-  return { exists: result.rows.length > 0 };
-}
-
-const setupSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-export async function createSuperAdmin(data: {
-  name: string;
-  email: string;
-  password: string;
-}) {
-  const parsed = setupSchema.safeParse(data);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0].message };
-  }
-
-  // Re-check that no admin exists (prevent race conditions)
-  const { exists } = await checkSuperAdminExists();
-  if (exists) {
-    return { success: false, error: "Super admin already exists" };
-  }
-
-  try {
-    // Ensure role column exists
-    await pool.query(
-      `ALTER TABLE "user" ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user'`
-    );
-
-    const hashedPassword = await hashPassword(parsed.data.password);
-    const userId = crypto.randomUUID();
-    const accountId = crypto.randomUUID();
-
-    await pool.query(
-      `INSERT INTO "user" (id, name, email, role, "emailVerified", "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, true, NOW(), NOW())`,
-      [userId, parsed.data.name, parsed.data.email, "admin"]
-    );
-
-    await pool.query(
-      `INSERT INTO "account" (id, "userId", "accountId", "providerId", password, "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
-      [accountId, userId, userId, "credential", hashedPassword]
-    );
-
-    return { success: true };
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to create super admin";
-    return { success: false, error: message };
-  }
-}
+const createSuperAdmin__server = createServerFn({ method: "POST" })
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/setup.action");
+    return impl.createSuperAdmin(...(unpackArgs(data) as Parameters<typeof Impl.createSuperAdmin>));
+  });
+export const createSuperAdmin = (...args: Parameters<typeof Impl.createSuperAdmin>) =>
+  createSuperAdmin__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.createSuperAdmin>;
