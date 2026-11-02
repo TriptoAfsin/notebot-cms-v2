@@ -132,8 +132,8 @@ export default function SetupPage() {
                 minLength={8}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating..." : "Create Super Admin"}
+            <Button type="submit" className="w-full" loading={loading}>
+              Create Super Admin
             </Button>
           </form>
         </CardContent>

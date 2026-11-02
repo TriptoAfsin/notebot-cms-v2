@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SearchableSelect } from "@/components/searchable-select";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Topic = {
   id: number;
@@ -57,7 +58,7 @@ export function EditTopicForm({ topic, subjects }: { topic: Topic; subjects: Sub
       toast.success("Topic updated");
       router.push("/topics");
     } else {
-      toast.error("Failed to update topic");
+      toast.error(firstError(result) ?? "Failed to update topic");
     }
   };
 

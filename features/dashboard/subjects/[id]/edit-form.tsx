@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Subject = {
   id: number;
@@ -48,7 +49,7 @@ export function EditSubjectForm({
       toast.success("Subject updated");
       router.push("/subjects");
     } else {
-      toast.error("Failed to update subject");
+      toast.error(firstError(result) ?? "Failed to update subject");
     }
   };
 

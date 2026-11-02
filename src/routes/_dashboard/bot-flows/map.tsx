@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import DashboardLoading from "@/features/dashboard/loading";
+import { MapSkeleton } from "@/features/dashboard/skeletons";
 import { getFlowMapAction } from "@/actions/bot-flows.action";
 import { FlowMapView } from "@/features/dashboard/bot-flows/flow-map";
 import { BotFlowsTabs } from "@/features/dashboard/bot-flows/tabs";
 
 export const Route = createFileRoute("/_dashboard/bot-flows/map")({
   head: () => ({ meta: [{ title: "Flow map · NoteBot CMS" }] }),
-  pendingComponent: DashboardLoading,
+  pendingComponent: MapSkeleton,
   loader: () => getFlowMapAction(),
   // The map is rebuilt from every flow; don't refetch it on each visit within a minute.
   staleTime: 60_000,

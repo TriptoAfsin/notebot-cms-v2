@@ -105,8 +105,8 @@ export default function TrackPage() {
                 required
               />
             </div>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Searching..." : "Search"}
+            <Button type="submit" loading={loading}>
+              Search
             </Button>
           </form>
 

@@ -1,6 +1,8 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
+import { useFormStatus } from "react-dom"
+import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -38,16 +40,38 @@ const buttonVariants = cva(
   }
 )
 
+const SPINNER_COLOR: Record<string, string> = {
+  default: "text-primary-foreground",
+  destructive: "text-white",
+  outline: "text-foreground",
+  secondary: "text-secondary-foreground",
+  ghost: "text-foreground",
+  link: "text-primary",
+}
+
+/**
+ * `loading` swaps the label for a spinner and blocks clicks. The label stays in the layout
+ * (invisible), so the button keeps its width and nothing beside it shifts.
+ *
+ * A submit button inside a `<form action={fn}>` picks this up by itself from `useFormStatus`,
+ * so those forms need no extra state. Forms that use `onSubmit` pass `loading` explicitly.
+ */
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  loading,
+  disabled,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    loading?: boolean
   }) {
+  const { pending } = useFormStatus()
+  const busy = loading ?? (!asChild && props.type === "submit" && pending)
   const Comp = asChild ? Slot.Root : "button"
 
   return (
@@ -55,9 +79,25 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      data-loading={busy || undefined}
+      aria-busy={busy || undefined}
+      disabled={disabled || busy}
+      // The label is hidden in place (transparent text, invisible child elements) rather than
+      // wrapped, so `has-[>svg]` padding and the button's width stay exactly as they were.
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        busy && "relative text-transparent! disabled:opacity-80 [&>*:not([data-spinner])]:invisible"
+      )}
       {...props}
-    />
+    >
+      {/* With asChild, Slottable marks the element to render; the spinner becomes its child. */}
+      {asChild ? <Slot.Slottable>{children}</Slot.Slottable> : children}
+      {busy && (
+        <span data-spinner className={cn("absolute inset-0 grid place-items-center", SPINNER_COLOR[variant ?? "default"])} aria-hidden="true">
+          <Loader2 className="animate-[spin-in_150ms_ease-out,spin_0.7s_linear_infinite]" />
+        </span>
+      )}
+    </Comp>
   )
 }
 

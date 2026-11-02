@@ -158,8 +158,8 @@ export default function NewInvitationPage() {
             </div>
 
             <div className="flex gap-2">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Invitation"}
+              <Button type="submit" loading={isSubmitting}>
+                Create Invitation
               </Button>
               <Button
                 type="button"

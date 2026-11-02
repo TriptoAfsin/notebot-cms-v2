@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Syllabus = {
   id: number;
@@ -43,7 +44,7 @@ export function CreateSyllabusForm({ existing }: { existing: Syllabus[] }) {
       toast.success("Syllabus entry created");
       router.push("/syllabuses");
     } else {
-      toast.error("Failed to create syllabus entry");
+      toast.error(firstError(result) ?? "Failed to create syllabus entry");
     }
   };
 

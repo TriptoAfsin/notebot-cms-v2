@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import DashboardLoading from "@/features/dashboard/loading";
+import { FormSkeleton } from "@/features/dashboard/skeletons";
 import Page from "@/features/dashboard/results/new/page";
 
 export const Route = createFileRoute("/_dashboard/results/new")({
-  pendingComponent: DashboardLoading,
+  pendingComponent: FormSkeleton,
   component: Page,
 });

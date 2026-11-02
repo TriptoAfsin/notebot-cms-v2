@@ -326,8 +326,8 @@ export function TopicsTable({
               )}
             </div>
             <div className="flex gap-2">
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving..." : "Save"}
+              <Button type="submit" loading={form.formState.isSubmitting}>
+                Save
               </Button>
               <Button type="button" variant="outline" onClick={() => setEditing(null)}>
                 Cancel

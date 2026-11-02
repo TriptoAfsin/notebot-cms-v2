@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type LabReport = {
   id: number;
@@ -37,7 +38,7 @@ export function EditLabReportForm({ labReport, levels }: { labReport: LabReport;
       toast.success("Lab report updated");
       router.push("/lab-reports");
     } else {
-      toast.error("Failed to update lab report");
+      toast.error(firstError(result) ?? "Failed to update lab report");
     }
   };
 

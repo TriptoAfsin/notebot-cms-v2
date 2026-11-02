@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 export default function NewResultPage() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function NewResultPage() {
       toast.success("Result created");
       router.push("/results");
     } else {
-      toast.error("Failed to create result");
+      toast.error(firstError(result) ?? "Failed to create result");
     }
   };
 

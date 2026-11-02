@@ -173,11 +173,11 @@
     linear-gradient(90deg, oklch(0.5 0 0 / 3%) 1px, transparent 1px);
 }
 
-/* Route transitions: quick crossfade, Emil curves. */
-::view-transition-old(root) { animation: vt-out 120ms var(--ease-out) both; }
-::view-transition-new(root) { animation: vt-in 200ms 30ms var(--ease-out) both; }
-@keyframes vt-out { to { opacity: 0; } }
-@keyframes vt-in { from { opacity: 0; transform: translateY(4px); } }
+/* Route skeletons ease in rather than popping (the content itself fades in from _dashboard.tsx). */
+.page-in { animation: page-in 180ms var(--ease-out) both; }
+@keyframes page-in { from { opacity: 0; } }
+/* Spinner inside a busy button. */
+@keyframes spin-in { from { opacity: 0; transform: scale(0.8); } }
 @keyframes progress {
   0% { transform: translateX(-100%) scaleX(0.4); }
   60% { transform: translateX(20%) scaleX(0.6); }

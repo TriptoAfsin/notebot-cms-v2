@@ -7,7 +7,7 @@ import { requireUser, UNAUTHORIZED } from "@/lib/session";
 import { logAudit, auditable } from "@/lib/audit";
 
 const qbSchema = z.object({
-  levelId: z.coerce.number().int(),
+  levelId: z.coerce.number().int().positive("Pick a level"),
   subjectSlug: z.string().min(1).max(50),
   title: z.string().min(1).max(500),
   url: z.string().url().max(1000),

@@ -214,8 +214,8 @@ export function EditPanel({ flow, onClose }: { flow: Flow; onClose: () => void }
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={onClose} disabled={pending}>Cancel</Button>
-            <Button onClick={submit} disabled={pending || blocked}>
-              {pending ? "Saving…" : "Save"}
+            <Button onClick={submit} loading={pending} disabled={blocked}>
+              Save
             </Button>
           </div>
         </CardContent>

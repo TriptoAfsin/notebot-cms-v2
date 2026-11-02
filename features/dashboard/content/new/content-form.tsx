@@ -384,7 +384,7 @@ export function ContentForm({
             </div>
 
             <div className="flex gap-2 pt-1">
-              <Button type="submit" disabled={pending}>{pending ? "Saving…" : "Add content"}</Button>
+              <Button type="submit" loading={pending}>Add content</Button>
               <Button type="button" variant="outline" onClick={() => router.push("/notes")}>Cancel</Button>
             </div>
           </form>

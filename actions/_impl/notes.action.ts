@@ -7,7 +7,7 @@ import { requireUser, UNAUTHORIZED } from "@/lib/session";
 import { logAudit, auditable } from "@/lib/audit";
 
 const noteSchema = z.object({
-  topicId: z.coerce.number().int(),
+  topicId: z.coerce.number().int().positive("Pick a topic"),
   title: z.string().min(1).max(500),
   url: z.string().url().max(1000),
   sortOrder: z.coerce.number().int().default(0),

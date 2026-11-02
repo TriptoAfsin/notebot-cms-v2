@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type QuestionBank = {
   id: number;
@@ -36,7 +37,7 @@ export function EditQuestionBankForm({ questionBank, levels }: { questionBank: Q
       toast.success("Question bank updated");
       router.push("/question-banks");
     } else {
-      toast.error("Failed to update question bank");
+      toast.error(firstError(result) ?? "Failed to update question bank");
     }
   };
 

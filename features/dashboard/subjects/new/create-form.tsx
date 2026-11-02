@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { toSlug } from "@/lib/slug";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Level = {
   id: number;
@@ -37,7 +38,7 @@ export function CreateSubjectForm({ levels }: { levels: Level[] }) {
       toast.success("Subject created");
       router.push("/subjects");
     } else {
-      toast.error("Failed to create subject");
+      toast.error(firstError(result) ?? "Failed to create subject");
     }
   };
 

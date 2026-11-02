@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 import { searchAsStrings, thenable } from "@/lib/route-helpers";
-import DashboardLoading from "@/features/dashboard/loading";
+import { AnalyticsSkeleton } from "@/features/dashboard/skeletons";
 import { AnalyticsView } from "@/features/dashboard/analytics/analytics-view";
 
 
@@ -39,7 +39,7 @@ const loadPage = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/_dashboard/analytics/")({
   head: () => ({ meta: [{ title: "Analytics · NoteBot CMS" }] }),
-  pendingComponent: DashboardLoading,
+  pendingComponent: AnalyticsSkeleton,
   validateSearch: searchAsStrings,
   loaderDeps: ({ search }) => search,
   loader: ({ deps, }) => loadPage({ data: packArgs([{}, deps]) }),

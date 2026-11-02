@@ -39,8 +39,8 @@ export function FlushCacheButton() {
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm" disabled={pending}>
-          <RefreshCw className={pending ? "h-4 w-4 mr-1.5 animate-spin" : "h-4 w-4 mr-1.5"} />
-          {pending ? "Clearing…" : "Clear engine cache"}
+          <RefreshCw className="h-4 w-4 mr-1.5" />
+          Clear engine cache
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -57,8 +57,8 @@ export function FlushCacheButton() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={(e) => { e.preventDefault(); flush(); }} disabled={pending}>
-            {pending ? "Clearing…" : "Clear cache"}
+          <AlertDialogAction onClick={(e) => { e.preventDefault(); flush(); }} loading={pending}>
+            Clear cache
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

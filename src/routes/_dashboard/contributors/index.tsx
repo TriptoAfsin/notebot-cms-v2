@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import type { ContributorSort } from "@/services/contributors.service";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 import { searchAsStrings, thenable } from "@/lib/route-helpers";
-import DashboardLoading from "@/features/dashboard/loading";
+import { TableSkeleton } from "@/features/dashboard/skeletons";
 import { Link } from "@/components/link";
 import { ChevronLeft, ChevronRight, Mail, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +66,7 @@ const loadPage = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/_dashboard/contributors/")({
   head: () => ({ meta: [{ title: "Contributors · NoteBot CMS" }] }),
-  pendingComponent: DashboardLoading,
+  pendingComponent: TableSkeleton,
   validateSearch: searchAsStrings,
   loaderDeps: ({ search }) => search,
   loader: ({ deps, }) => loadPage({ data: packArgs([{}, deps]) }),

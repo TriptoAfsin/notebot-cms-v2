@@ -10,6 +10,7 @@ import { SearchableSelect } from "@/components/searchable-select";
 import { LivePreview } from "@/components/live-preview";
 import { toSlug } from "@/lib/slug";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Subject = {
   id: number;
@@ -53,7 +54,7 @@ export function NewTopicForm({ subjects }: { subjects: Subject[] }) {
       toast.success("Topic created");
       router.push("/topics");
     } else {
-      toast.error("Failed to create topic");
+      toast.error(firstError(result) ?? "Failed to create topic");
     }
   };
 

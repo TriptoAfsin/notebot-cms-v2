@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import DashboardLoading from "@/features/dashboard/loading";
+import { SettingsSkeleton } from "@/features/dashboard/skeletons";
 import { getSubmissionConfig } from "@/actions/app-settings.action";
 import { SubmissionSettingsForm } from "@/features/dashboard/submissions/settings/settings-form";
 
@@ -19,7 +19,7 @@ const loadPage = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/_dashboard/submissions/settings")({
-  pendingComponent: DashboardLoading,
+  pendingComponent: SettingsSkeleton,
   loader: () => loadPage({ data: packArgs([{}, {}]) }),
   component: RouteComponent,
 });

@@ -158,8 +158,8 @@ export default function InvitePage() {
                 minLength={8}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating Account..." : "Create Account"}
+            <Button type="submit" className="w-full" loading={loading}>
+              Create Account
             </Button>
           </form>
         </CardContent>

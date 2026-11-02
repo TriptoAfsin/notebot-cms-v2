@@ -225,8 +225,8 @@ export function SubmitForm({ config }: { config: SubmissionConfig }) {
               <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Submitting..." : "Submit Note"}
+            <Button type="submit" className="w-full" loading={loading}>
+              Submit Note
             </Button>
 
             <div className="text-center">

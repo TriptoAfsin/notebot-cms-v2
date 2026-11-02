@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 import { searchAsStrings, thenable } from "@/lib/route-helpers";
-import DashboardLoading from "@/features/dashboard/loading";
+import { TableSkeleton } from "@/features/dashboard/skeletons";
 import { getSyllabusesAction, getSyllabusBatchesAction } from "@/actions/syllabuses.action";
 import { SyllabusesTable } from "@/features/dashboard/syllabuses/syllabuses-table";
 
@@ -25,7 +25,7 @@ const loadPage = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/_dashboard/syllabuses/")({
-  pendingComponent: DashboardLoading,
+  pendingComponent: TableSkeleton,
   validateSearch: searchAsStrings,
   loaderDeps: ({ search }) => search,
   loader: ({ deps, }) => loadPage({ data: packArgs([{}, deps]) }),

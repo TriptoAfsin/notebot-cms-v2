@@ -268,7 +268,7 @@ function ToggleButton({ flow }: { flow: Flow }) {
 
   if (!flow.enabled) {
     return (
-      <Button variant="destructive" size="sm" disabled={pending}
+      <Button variant="destructive" size="sm" loading={pending}
         title="This flow is off — the engine falls through to the content tables"
         onClick={() => apply(true)}>
         Disabled
@@ -302,11 +302,11 @@ function ToggleButton({ flow }: { flow: Flow }) {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={pending}>Keep it on</AlertDialogCancel>
             <AlertDialogAction
-              disabled={pending}
+              loading={pending}
+              variant="destructive"
               onClick={(e) => { e.preventDefault(); apply(false); }}
-              className="bg-destructive text-white hover:bg-destructive/90"
             >
-              {pending ? "Disabling…" : "Disable"}
+              Disable
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

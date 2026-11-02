@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 import { searchAsStrings, thenable } from "@/lib/route-helpers";
-import DashboardLoading from "@/features/dashboard/loading";
+import { TableSkeleton } from "@/features/dashboard/skeletons";
 import { getLabReportsAction } from "@/actions/lab-reports.action";
 import { getLevelsAction } from "@/actions/levels.action";
 import { LabReportsTable } from "@/features/dashboard/lab-reports/lab-reports-table";
@@ -24,7 +24,7 @@ const loadPage = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/_dashboard/lab-reports/")({
-  pendingComponent: DashboardLoading,
+  pendingComponent: TableSkeleton,
   validateSearch: searchAsStrings,
   loaderDeps: ({ search }) => search,
   loader: ({ deps, }) => loadPage({ data: packArgs([{}, deps]) }),

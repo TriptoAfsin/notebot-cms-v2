@@ -7,7 +7,7 @@ import { requireUser, UNAUTHORIZED } from "@/lib/session";
 import { logAudit, auditable } from "@/lib/audit";
 
 const routineSchema = z.object({
-  levelId: z.coerce.number().int(),
+  levelId: z.coerce.number().int().positive("Pick a level"),
   term: z.string().max(50).optional(),
   department: z.string().max(100).optional(),
   title: z.string().min(1).max(500),

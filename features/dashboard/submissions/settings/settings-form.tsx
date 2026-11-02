@@ -186,8 +186,8 @@ export function SubmissionSettingsForm({ config }: { config: Config }) {
       </Card>
 
       <div className="flex gap-2">
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? "Saving..." : "Save Settings"}
+        <Button onClick={handleSave} loading={saving}>
+          Save Settings
         </Button>
         <Link href="/submissions">
           <Button variant="outline">Cancel</Button>

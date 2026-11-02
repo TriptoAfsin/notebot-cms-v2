@@ -7,7 +7,7 @@ import { requireUser, UNAUTHORIZED } from "@/lib/session";
 import { logAudit, auditable } from "@/lib/audit";
 
 const topicSchema = z.object({
-  subjectId: z.coerce.number().int(),
+  subjectId: z.coerce.number().int().positive("Pick a subject"),
   name: z.string().min(1).max(100),
   displayName: z.string().min(1).max(200),
   slug: z.string().min(1).max(100),

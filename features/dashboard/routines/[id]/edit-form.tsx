@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Routine = {
   id: number;
@@ -37,7 +38,7 @@ export function EditRoutineForm({ routine, levels }: { routine: Routine; levels:
       toast.success("Routine updated");
       router.push("/routines");
     } else {
-      toast.error("Failed to update routine");
+      toast.error(firstError(result) ?? "Failed to update routine");
     }
   };
 

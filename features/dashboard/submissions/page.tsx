@@ -253,12 +253,17 @@ export default function SubmissionsPage() {
     });
   };
 
-  const remove = async () => {
+  const [removing, setRemoving] = useState(false);
+  const [removeOpen, setRemoveOpen] = useState(false);
+  const remove = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
     if (!selected) return;
     const id = selected.id;
     const next = visible[index + 1] ?? visible[index - 1];
-    const r = await deleteSubmission(id);
+    setRemoving(true);
+    const r = await deleteSubmission(id).finally(() => setRemoving(false));
     if (r && "error" in r && r.error) return toast.error("Could not delete the submission.");
+    setRemoveOpen(false);
     setItems((list) => list?.filter((s) => s.id !== id) ?? null);
     if (next) select(next.id);
     toast.success("Submission deleted");
@@ -419,7 +424,7 @@ export default function SubmissionsPage() {
                     {selected.subjectName} · {selected.level}
                   </p>
                 </div>
-                <AlertDialog>
+                <AlertDialog open={removeOpen} onOpenChange={(o) => !removing && setRemoveOpen(o)}>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon-sm" aria-label="Delete submission" className="text-muted-foreground hover:text-destructive">
                       <Trash2 />
@@ -433,8 +438,8 @@ export default function SubmissionsPage() {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={remove} className="bg-destructive text-white hover:bg-destructive/90">
+                      <AlertDialogCancel disabled={removing}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={remove} variant="destructive" loading={removing}>
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

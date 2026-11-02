@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import DashboardLoading from "@/features/dashboard/loading";
+import { FormSkeleton } from "@/features/dashboard/skeletons";
 import { getSyllabusesAction } from "@/actions/syllabuses.action";
 import { CreateSyllabusForm } from "@/features/dashboard/syllabuses/new/create-form";
 
@@ -19,7 +19,7 @@ const loadPage = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/_dashboard/syllabuses/new")({
-  pendingComponent: DashboardLoading,
+  pendingComponent: FormSkeleton,
   loader: () => loadPage({ data: packArgs([{}, {}]) }),
   component: RouteComponent,
 });

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required").max(50),
@@ -41,7 +42,7 @@ export default function NewLevelPage() {
       toast.success("Level created");
       router.push("/levels");
     } else {
-      toast.error("Failed to create level");
+      toast.error(firstError(result) ?? "Failed to create level");
     }
   };
 
@@ -74,8 +75,8 @@ export default function NewLevelPage() {
               <Input id="sortOrder" type="number" {...register("sortOrder")} />
             </div>
             <div className="flex gap-2">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create"}
+              <Button type="submit" loading={isSubmitting}>
+                Create
               </Button>
               <Button type="button" variant="outline" onClick={() => router.push("/levels")}>
                 Cancel

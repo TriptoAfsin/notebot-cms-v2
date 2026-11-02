@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import DashboardLoading from "@/features/dashboard/loading";
+import { TableSkeleton } from "@/features/dashboard/skeletons";
 import { getUsers } from "@/actions/users.action";
 import { UsersTable } from "@/features/dashboard/users/users-table";
 
@@ -20,7 +20,7 @@ const loadPage = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/_dashboard/users/")({
-  pendingComponent: DashboardLoading,
+  pendingComponent: TableSkeleton,
   loader: () => loadPage({ data: packArgs([{}, {}]) }),
   component: RouteComponent,
 });

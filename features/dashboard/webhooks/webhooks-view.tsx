@@ -125,9 +125,9 @@ export function WebhooksView({ hooks, deliveries }: { hooks: Hook[]; deliveries:
                 ))}
               </div>
             </fieldset>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" loading={pending}>
               <Plus className="h-4 w-4 mr-1.5" />
-              {pending ? "Saving…" : "Add endpoint"}
+              Add endpoint
             </Button>
           </form>
         </CardContent>

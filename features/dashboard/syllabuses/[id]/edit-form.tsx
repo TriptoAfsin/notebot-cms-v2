@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Syllabus = {
   id: number;
@@ -29,7 +30,7 @@ export function EditSyllabusForm({ syllabus }: { syllabus: Syllabus }) {
       toast.success("Syllabus entry updated");
       router.push("/syllabuses");
     } else {
-      toast.error("Failed to update syllabus entry");
+      toast.error(firstError(result) ?? "Failed to update syllabus entry");
     }
   };
 

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 import { thenable } from "@/lib/route-helpers";
-import DashboardLoading from "@/features/dashboard/loading";
+import { FormSkeleton } from "@/features/dashboard/skeletons";
 import { notFound } from "@/lib/navigation";
 import { getQuestionBankByIdAction } from "@/actions/question-banks.action";
 import { getLevelsAction } from "@/actions/levels.action";
@@ -30,7 +30,7 @@ const loadPage = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/_dashboard/question-banks/$id")({
-  pendingComponent: DashboardLoading,
+  pendingComponent: FormSkeleton,
   loader: ({ params, }) => loadPage({ data: packArgs([params, {}]) }),
   component: RouteComponent,
 });

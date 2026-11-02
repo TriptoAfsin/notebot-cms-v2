@@ -78,8 +78,8 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+            <Button type="submit" className="w-full" loading={loading}>
+              Sign In
             </Button>
           </form>
         </CardContent>

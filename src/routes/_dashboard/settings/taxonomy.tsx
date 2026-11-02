@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import DashboardLoading from "@/features/dashboard/loading";
+import { SettingsSkeleton } from "@/features/dashboard/skeletons";
 import { getTaxonomyAction } from "@/actions/taxonomy.action";
 import { DEFAULT_TAXONOMY, type TaxonomyField } from "@/lib/taxonomy";
 import { TaxonomyEditor } from "@/features/dashboard/settings/taxonomy/taxonomy-editor";
@@ -25,7 +25,7 @@ const loadPage = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/_dashboard/settings/taxonomy")({
-  pendingComponent: DashboardLoading,
+  pendingComponent: SettingsSkeleton,
   loader: () => loadPage({ data: packArgs([{}, {}]) }),
   component: RouteComponent,
 });

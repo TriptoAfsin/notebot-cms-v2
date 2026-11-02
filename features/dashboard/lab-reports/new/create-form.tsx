@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Level = {
   id: number;
@@ -26,7 +27,7 @@ export function CreateLabReportForm({ levels }: { levels: Level[] }) {
       toast.success("Lab report created");
       router.push("/lab-reports");
     } else {
-      toast.error("Failed to create lab report");
+      toast.error(firstError(result) ?? "Failed to create lab report");
     }
   };
 

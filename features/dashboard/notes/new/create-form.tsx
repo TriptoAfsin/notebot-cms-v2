@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SearchableSelect } from "@/components/searchable-select";
 import { LivePreview } from "@/components/live-preview";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Topic = {
   id: number;
@@ -52,7 +53,7 @@ export function CreateNoteForm({ topics, initial }: { topics: Topic[]; initial?:
       toast.success("Note created");
       router.push("/notes");
     } else {
-      toast.error("Failed to create note");
+      toast.error(firstError(result) ?? "Failed to create note");
     }
   };
 

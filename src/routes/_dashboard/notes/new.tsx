@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import DashboardLoading from "@/features/dashboard/loading";
+import { FormSkeleton } from "@/features/dashboard/skeletons";
 import { getTopicsAction } from "@/actions/topics.action";
 import { CreateNoteForm } from "@/features/dashboard/notes/new/create-form";
 
@@ -19,7 +19,7 @@ const loadPage = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/_dashboard/notes/new")({
-  pendingComponent: DashboardLoading,
+  pendingComponent: FormSkeleton,
   // Prefill from the submissions queue: ?topicId=&url=&title=&author=
   validateSearch: (s: Record<string, unknown>) => ({
     topicId: s.topicId != null && Number.isFinite(Number(s.topicId)) ? Number(s.topicId) : undefined,

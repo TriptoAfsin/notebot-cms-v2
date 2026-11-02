@@ -282,8 +282,8 @@ export function SubjectsTable({
               )}
             </div>
             <div className="flex gap-2 pt-4">
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+              <Button type="submit" loading={form.formState.isSubmitting}>
+                Save Changes
               </Button>
               <Button type="button" variant="outline" onClick={() => setEditing(null)}>
                 Cancel

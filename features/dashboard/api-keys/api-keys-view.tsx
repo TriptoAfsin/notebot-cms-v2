@@ -162,9 +162,9 @@ export function ApiKeysView({ keys, baseUrl }: { keys: Key[]; baseUrl: string })
                 ))}
               </select>
             </div>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" loading={pending}>
               <Plus className="h-4 w-4 mr-1.5" />
-              {pending ? "Creating…" : "Create key"}
+              Create key
             </Button>
           </form>
         </CardContent>

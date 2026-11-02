@@ -7,11 +7,14 @@ export function getRouter() {
   return createRouter({
     routeTree,
     scrollRestoration: true,
-    defaultViewTransition: true,
+    // No View Transitions: they snapshot and crossfade the whole document, so the sidebar and
+    // header blinked on every click. The dashboard layout fades only its content area instead.
     defaultPreload: "intent",
-    // Skeletons after 250ms (default 1s), held at least 400ms so they never flicker.
-    defaultPendingMs: 250,
-    defaultPendingMinMs: 400,
+    // Preloaded data stays fresh long enough to be used by the click that follows the hover.
+    defaultPreloadStaleTime: 10_000,
+    // Skeletons after 200ms (default 1s), held at least 350ms so they never flicker.
+    defaultPendingMs: 200,
+    defaultPendingMinMs: 350,
     defaultNotFoundComponent: NotFound,
     defaultErrorComponent: RouteError,
   });

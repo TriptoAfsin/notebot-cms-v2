@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
+import { forgetUser } from "@/lib/auth-cache";
 import { useRouter, usePathname } from "@/lib/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SidebarContent, navItems } from "@/components/layout/sidebar";
@@ -36,6 +37,7 @@ export function AppHeader({ user, counts }: { user?: { name: string; email: stri
 
   const handleSignOut = async () => {
     await signOut();
+    forgetUser();
     router.push("/login");
   };
 

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { firstError } from "@/lib/action-error";
 
 type Level = {
   id: number;
@@ -25,7 +26,7 @@ export function EditLevelForm({ level }: { level: Level }) {
       toast.success("Level updated");
       router.push("/levels");
     } else {
-      toast.error("Failed to update level");
+      toast.error(firstError(result) ?? "Failed to update level");
     }
   };
 
