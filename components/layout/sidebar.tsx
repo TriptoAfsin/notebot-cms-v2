@@ -1,105 +1,124 @@
-
 import { Link } from "@/components/link";
 import { usePathname } from "@/lib/navigation";
 import {
-  BookOpen,
-  GraduationCap,
-  Layers,
-  FlaskConical,
-  HelpCircle,
-  Calendar,
-  // BarChart3,
-  Home,
-  Users,
-  Mail,
-  FileInput,
-  HeartHandshake,
-  FileText,
-  FilePlus2,
-  History,
-  ChartLine,
-  Bot,
-  KeyRound,
-  ScrollText,
-  Tags,
-  Webhook,
+  BookOpen, GraduationCap, Layers, FlaskConical, HelpCircle, Calendar, Home, Users, Mail, FileInput,
+  HeartHandshake, FileText, FilePlus2, History, ChartLine, Bot, KeyRound, ScrollText, Tags, Webhook, Trophy,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { NavCounts } from "@/lib/nav-counts";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home, color: "text-blue-500" },
-  { href: "/content/new", label: "Add Content", icon: FilePlus2, color: "text-primary" },
-  { href: "/levels", label: "Levels", icon: Layers, color: "text-violet-500" },
-  { href: "/subjects", label: "Subjects", icon: GraduationCap, color: "text-amber-500" },
-  { href: "/topics", label: "Topics", icon: BookOpen, color: "text-emerald-500" },
-  { href: "/notes", label: "Notes", icon: FileText, color: "text-sky-500" },
-  { href: "/lab-reports", label: "Lab Reports", icon: FlaskConical, color: "text-pink-500" },
-  { href: "/question-banks", label: "Question Banks", icon: HelpCircle, color: "text-orange-500" },
-  { href: "/routines", label: "Routines", icon: Calendar, color: "text-teal-500" },
-  { href: "/syllabuses", label: "Syllabuses", icon: ScrollText, color: "text-fuchsia-500" },
-  // { href: "/results", label: "Results", icon: BarChart3, color: "text-indigo-500" },
-  { href: "/users", label: "Users", icon: Users, color: "text-cyan-500" },
-  { href: "/invitations", label: "Invitations", icon: Mail, color: "text-rose-500" },
-  { href: "/submissions", label: "Submissions", icon: FileInput, color: "text-lime-600" },
-  { href: "/contributors", label: "Contributors", icon: HeartHandshake, color: "text-rose-400" },
-  { href: "/bot-flows", label: "Bot Flows", icon: Bot, color: "text-emerald-400" },
-  { href: "/analytics", label: "Analytics", icon: ChartLine, color: "text-blue-400" },
-  { href: "/audit", label: "Audit Log", icon: History, color: "text-slate-500" },
-  { href: "/api-keys", label: "API Keys", icon: KeyRound, color: "text-zinc-500" },
-  { href: "/webhooks", label: "Webhooks", icon: Webhook, color: "text-purple-500" },
-  { href: "/settings/taxonomy", label: "Taxonomy", icon: Tags, color: "text-indigo-500" },
+type NavItem = { href: string; label: string; icon: LucideIcon; count?: keyof NavCounts };
+type NavGroup = { label: string; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: Home },
+      { href: "/analytics", label: "Analytics", icon: ChartLine },
+    ],
+  },
+  {
+    label: "Content",
+    items: [
+      { href: "/content/new", label: "Add content", icon: FilePlus2 },
+      { href: "/levels", label: "Levels", icon: Layers },
+      { href: "/subjects", label: "Subjects", icon: GraduationCap },
+      { href: "/topics", label: "Topics", icon: BookOpen },
+      { href: "/notes", label: "Notes", icon: FileText, count: "notes" },
+      { href: "/lab-reports", label: "Lab reports", icon: FlaskConical, count: "labReports" },
+      { href: "/question-banks", label: "Question banks", icon: HelpCircle, count: "questionBanks" },
+      { href: "/routines", label: "Routines", icon: Calendar },
+      { href: "/syllabuses", label: "Syllabuses", icon: ScrollText },
+      { href: "/results", label: "Results", icon: Trophy },
+    ],
+  },
+  {
+    label: "Community",
+    items: [
+      { href: "/submissions", label: "Submissions", icon: FileInput, count: "pending" },
+      { href: "/contributors", label: "Contributors", icon: HeartHandshake },
+      { href: "/users", label: "Users", icon: Users },
+      { href: "/invitations", label: "Invitations", icon: Mail },
+    ],
+  },
+  {
+    label: "Bot",
+    items: [{ href: "/bot-flows", label: "Bot flows", icon: Bot, count: "botFlows" }],
+  },
+  {
+    label: "System",
+    items: [
+      { href: "/audit", label: "Audit log", icon: History },
+      { href: "/api-keys", label: "API keys", icon: KeyRound },
+      { href: "/webhooks", label: "Webhooks", icon: Webhook },
+      { href: "/settings/taxonomy", label: "Taxonomy", icon: Tags },
+    ],
+  },
 ];
 
+const navItems = navGroups.flatMap((g) => g.items);
 export { navItems };
 
-export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+const nf = new Intl.NumberFormat("en-US");
+
+export function SidebarContent({ onNavigate, counts }: { onNavigate?: () => void; counts?: NavCounts }) {
   const pathname = usePathname();
 
   return (
     <>
-      <div className="mb-8 px-4">
-        <div className="flex items-center gap-2.5">
-          <img src="/notebot-logo.png" alt="NoteBot" width={36} height={36} />
-          <div>
-            <h1 className="text-base font-bold tracking-tight">NoteBot</h1>
-            <p className="text-[10px] text-muted-foreground leading-none">Content Manager</p>
+      <Link href="/dashboard" onClick={onNavigate} className="mb-3 flex items-center gap-2 rounded-md px-3 py-1">
+        <img src="/notebot-logo.png" alt="" width={22} height={22} className="rounded-[5px]" />
+        <span className="text-[14px] font-semibold tracking-[-0.01em]">NoteBot CMS</span>
+      </Link>
+      <nav className="flex-1 space-y-3 px-2" aria-label="Main">
+        {navGroups.map((group) => (
+          <div key={group.label}>
+            <p className="px-2.5 pt-1 pb-1 font-mono text-[10.5px] font-medium uppercase tracking-[0.07em] text-muted-foreground">
+              {group.label}
+            </p>
+            <div className="space-y-px">
+              {group.items.map((item) => {
+                const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"));
+                const n = item.count && counts ? counts[item.count] : undefined;
+                const hot = item.count === "pending" && !!n;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onNavigate}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "relative flex items-center gap-2.5 rounded-md px-2.5 py-[5px] text-[13.5px] transition-colors duration-100",
+                      isActive
+                        ? "bg-sidebar-accent font-medium text-foreground before:absolute before:top-1.5 before:bottom-1.5 before:-left-2 before:w-[3px] before:rounded-r-[3px] before:bg-primary"
+                        : "text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0 opacity-80" />
+                    <span className="truncate">{item.label}</span>
+                    {n !== undefined && (n > 0 || item.count !== "pending") && (
+                      <span className={cn("ml-auto font-mono text-[11.5px] tabular-nums", hot ? "text-primary" : "text-muted-foreground")}>
+                        {hot ? `${n} new` : nf.format(n)}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </div>
-      <nav className="space-y-0.5 flex-1 px-3">
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(item.href));
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
-                isActive
-                  ? "bg-primary/10 text-primary shadow-[inset_2px_0_0_var(--color-primary)]"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
-              )}
-            >
-              <item.icon className={cn("h-4 w-4", isActive ? "text-primary" : item.color)} />
-              {item.label}
-            </Link>
-          );
-        })}
+        ))}
       </nav>
     </>
   );
 }
 
-export function AppSidebar() {
+export function AppSidebar({ counts }: { counts?: NavCounts }) {
   return (
-    // sticky + h-screen rather than min-h-screen: min-h-screen makes the sidebar as tall as the
-    // page, so it scrolled away on any view taller than the viewport. h-screen pins it to one
-    // viewport and overflow-y-auto lets the nav itself scroll when the list outgrows a short window.
-    <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col overflow-y-auto border-r bg-card/80 py-4 backdrop-blur-sm">
-      <SidebarContent />
+    // sticky + h-screen pins the sidebar to one viewport; the nav scrolls when it outgrows it.
+    <aside className="sticky top-0 flex h-screen w-[216px] shrink-0 flex-col overflow-y-auto border-r border-sidebar-border bg-sidebar py-3">
+      <SidebarContent counts={counts} />
     </aside>
   );
 }
