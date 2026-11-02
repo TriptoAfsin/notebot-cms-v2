@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import { searchAsStrings, thenable } from "@/lib/route-helpers";
 import DashboardLoading from "@/features/dashboard/loading";
 import { Link } from "@/components/link";
 import { getInvitations } from "@/actions/invitations.action";
@@ -25,7 +24,7 @@ const loadPage = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/_dashboard/invitations/")({
   pendingComponent: DashboardLoading,
-  loader: ({ }) => loadPage({ data: packArgs([{}, {}]) }),
+  loader: () => loadPage({ data: packArgs([{}, {}]) }),
   component: RouteComponent,
 });
 
@@ -34,7 +33,7 @@ function RouteComponent() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Invitations</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Invitations</h1>
         <Link href="/invitations/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />

@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import { searchAsStrings, thenable } from "@/lib/route-helpers";
 import DashboardLoading from "@/features/dashboard/loading";
 import { getLevelsAction } from "@/actions/levels.action";
 import { CreateLabReportForm } from "@/features/dashboard/lab-reports/new/create-form";
@@ -21,7 +20,7 @@ const loadPage = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/_dashboard/lab-reports/new")({
   pendingComponent: DashboardLoading,
-  loader: ({ }) => loadPage({ data: packArgs([{}, {}]) }),
+  loader: () => loadPage({ data: packArgs([{}, {}]) }),
   component: RouteComponent,
 });
 
@@ -29,7 +28,7 @@ function RouteComponent() {
   const { levels } = Route.useLoaderData();
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Create Lab Report</h1>
+      <h1 className="mb-5 text-[22px] font-semibold tracking-[-0.02em]">Create Lab Report</h1>
       <CreateLabReportForm levels={levels} />
     </div>
   );

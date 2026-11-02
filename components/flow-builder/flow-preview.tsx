@@ -87,7 +87,6 @@ export function FlowPreview({ blocks }: { blocks: EditableBlock[] }) {
             return (
               <Bubble key={b.id}>
                 {b.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- arbitrary remote URL, not a known asset
                   <img src={b.imageUrl} alt="" className="max-h-40 rounded-md object-contain" />
                 ) : (
                   <p className="text-[13px] text-muted-foreground">(no image URL)</p>
@@ -100,7 +99,6 @@ export function FlowPreview({ blocks }: { blocks: EditableBlock[] }) {
             return (
               <Bubble key={b.id} className="w-full max-w-[280px] p-0 overflow-hidden">
                 {b.card.imageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element -- arbitrary remote URL
                   <img src={b.card.imageUrl} alt="" className="h-28 w-full object-cover" />
                 )}
                 <div className="space-y-1 p-2.5">

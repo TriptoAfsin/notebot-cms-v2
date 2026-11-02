@@ -1,3 +1,4 @@
+import { driveId } from "@/lib/drive";
 import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
@@ -41,11 +42,6 @@ export type IngestResult = {
 const slugify = (s: string, max: number) =>
   String(s || "").toLowerCase().replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, max);
 
-/** Drive links are the same file whether or not they carry ?usp=sharing. */
-const driveId = (u: string) => {
-  const m = String(u).match(/\/d\/([\w-]{10,})/) || String(u).match(/[?&]id=([\w-]{10,})/) || String(u).match(/\/folders\/([\w-]{10,})/);
-  return m ? m[1] : null;
-};
 
 export class IngestError extends Error {
   status: number;

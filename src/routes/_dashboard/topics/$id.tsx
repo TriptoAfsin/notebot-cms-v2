@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import { searchAsStrings, thenable } from "@/lib/route-helpers";
+import { thenable } from "@/lib/route-helpers";
 import DashboardLoading from "@/features/dashboard/loading";
 import { notFound } from "@/lib/navigation";
 import { getTopicByIdAction } from "@/actions/topics.action";
@@ -39,7 +39,7 @@ function RouteComponent() {
   const { topic, subjects } = Route.useLoaderData();
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Edit Topic</h1>
+      <h1 className="mb-5 text-[22px] font-semibold tracking-[-0.02em]">Edit Topic</h1>
       <EditTopicForm topic={topic} subjects={subjects} />
     </div>
   );

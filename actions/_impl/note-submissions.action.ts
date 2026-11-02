@@ -111,7 +111,7 @@ export async function reviewSubmission(formData: FormData) {
   const parsed = reviewSchema.safeParse({
     id: formData.get("id"),
     status: formData.get("status"),
-    reviewNote: formData.get("reviewNote"),
+    reviewNote: formData.get("reviewNote") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -163,4 +163,14 @@ export async function deleteSubmission(id: number) {
 
   await submissionService.deleteById(id);
   return { success: true };
+}
+
+/** Automatic review checks for one submission (link public, topic exists, duplicate, search gap). */
+export async function checkSubmission(id: number) {
+  const session = await getSession();
+  if (!session) return { error: "Unauthorized" as const };
+  const submission = await submissionService.getById(id);
+  if (!submission) return { error: "Not found" as const };
+  const { runChecks } = await import("@/services/submission-checks.service");
+  return { data: await runChecks(submission) };
 }

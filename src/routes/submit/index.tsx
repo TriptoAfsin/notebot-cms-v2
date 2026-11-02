@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import { searchAsStrings, thenable } from "@/lib/route-helpers";
+import { packArgs, passThrough, unpackArgs } from "@/lib/server-fn";
 import { getSubmissionConfig } from "@/actions/app-settings.action";
 import { SubmitForm } from "@/features/submit/submit-form";
 
@@ -18,7 +17,7 @@ const loadPage = createServerFn({ method: "GET" })
   });
 
 export const Route = createFileRoute("/submit/")({
-  loader: ({ }) => loadPage({ data: packArgs([{}, {}]) }),
+  loader: () => loadPage({ data: packArgs([{}, {}]) }),
   component: RouteComponent,
 });
 

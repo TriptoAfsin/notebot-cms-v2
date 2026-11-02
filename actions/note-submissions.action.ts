@@ -51,3 +51,13 @@ const deleteSubmission__server = createServerFn({ method: "POST" })
   });
 export const deleteSubmission = (...args: Parameters<typeof Impl.deleteSubmission>) =>
   deleteSubmission__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.deleteSubmission>;
+
+const checkSubmission__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/note-submissions.action");
+    return impl.checkSubmission(...(unpackArgs(data) as Parameters<typeof Impl.checkSubmission>));
+  });
+export const checkSubmission = (...args: Parameters<typeof Impl.checkSubmission>) =>
+  checkSubmission__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.checkSubmission>;

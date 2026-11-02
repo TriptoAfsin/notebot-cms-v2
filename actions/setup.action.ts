@@ -2,7 +2,7 @@
 // call signatures are unchanged. Implementations live in ./_impl/setup.action.ts (server-only).
 import { createServerFn } from "@tanstack/react-start";
 import type * as Impl from "./_impl/setup.action";
-import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
+import { packArgs, passThrough, unpackArgs } from "@/lib/server-fn";
 
 const checkSuperAdminExists__server = createServerFn({ method: "GET" })
   .validator(passThrough)

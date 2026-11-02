@@ -1,5 +1,5 @@
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -39,7 +39,9 @@ export function UsersTable({ users }: { users: User[] }) {
     );
   }, [users, debouncedSearch]);
 
-  useEffect(() => { setPage(1); }, [debouncedSearch]);
+  // Back to page 1 when the search changes (adjusting state during render, not in an effect).
+  const [pageFor, setPageFor] = useState(debouncedSearch);
+  if (pageFor !== debouncedSearch) { setPageFor(debouncedSearch); setPage(1); }
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);

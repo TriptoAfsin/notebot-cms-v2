@@ -88,7 +88,7 @@ function RouteComponent() {
   return (
     <div className="space-y-6">
       <div className="min-w-0">
-        <h1 className="text-2xl font-bold">Contributors</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Contributors</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Students who submitted notes through the form, matched by email. Kept up to date by the ingest
           pipeline; contributors are thanked by email when their notes go live.

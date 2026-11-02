@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import { searchAsStrings, thenable } from "@/lib/route-helpers";
 import DashboardLoading from "@/features/dashboard/loading";
 import { getLevelsAction } from "@/actions/levels.action";
 import { LevelsTable } from "@/features/dashboard/levels/levels-table";
@@ -21,7 +20,7 @@ const loadPage = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/_dashboard/levels/")({
   pendingComponent: DashboardLoading,
-  loader: ({ }) => loadPage({ data: packArgs([{}, {}]) }),
+  loader: () => loadPage({ data: packArgs([{}, {}]) }),
   component: RouteComponent,
 });
 

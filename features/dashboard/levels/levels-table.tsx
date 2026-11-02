@@ -1,5 +1,5 @@
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "@/components/link";
 import { useRouter } from "@/lib/navigation";
 import { useForm } from "react-hook-form";
@@ -63,7 +63,9 @@ export function LevelsTable({ levels }: { levels: Level[] }) {
     );
   }, [levels, debouncedSearch]);
 
-  useEffect(() => { setPage(1); }, [debouncedSearch]);
+  // Back to page 1 when the search changes (adjusting state during render, not in an effect).
+  const [pageFor, setPageFor] = useState(debouncedSearch);
+  if (pageFor !== debouncedSearch) { setPageFor(debouncedSearch); setPage(1); }
 
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);

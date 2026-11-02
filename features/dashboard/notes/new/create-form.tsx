@@ -16,12 +16,12 @@ type Topic = {
   subjectName: string | null;
 };
 
-export function CreateNoteForm({ topics }: { topics: Topic[] }) {
+export function CreateNoteForm({ topics, initial }: { topics: Topic[]; initial?: { topicId?: string; title?: string; url?: string; author?: string } }) {
   const router = useRouter();
-  const [topicId, setTopicId] = useState("");
+  const [topicId, setTopicId] = useState(initial?.topicId ?? "");
   // controlled so the preview can follow keystrokes
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [url, setUrl] = useState(initial?.url ?? "");
 
   const topicOptions = topics.map((t) => ({
     value: String(t.id),
@@ -92,7 +92,7 @@ export function CreateNoteForm({ topics }: { topics: Topic[] }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="author">Author</Label>
-              <Input id="author" name="author" placeholder="Author name" />
+              <Input id="author" name="author" placeholder="Author name" defaultValue={initial?.author} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="year">Year</Label>

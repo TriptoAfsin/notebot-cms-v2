@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import DashboardLoading from "@/features/dashboard/loading";
-import Page from "@/features/dashboard/submissions/[id]/page";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+/** Old per-submission URLs (emails, bookmarks) open the review queue with that submission selected. */
 export const Route = createFileRoute("/_dashboard/submissions/$id")({
-  pendingComponent: DashboardLoading,
-  component: Page,
+  beforeLoad: ({ params }) => {
+    throw redirect({ href: `/submissions?status=all&id=${encodeURIComponent(params.id)}` });
+  },
 });

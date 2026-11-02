@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
-import { searchAsStrings, thenable } from "@/lib/route-helpers";
 import DashboardLoading from "@/features/dashboard/loading";
 import { getTopicsAction } from "@/actions/topics.action";
 import { CreateNoteForm } from "@/features/dashboard/notes/new/create-form";
@@ -21,16 +20,25 @@ const loadPage = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/_dashboard/notes/new")({
   pendingComponent: DashboardLoading,
-  loader: ({ }) => loadPage({ data: packArgs([{}, {}]) }),
+  // Prefill from the submissions queue: ?topicId=&url=&title=&author=
+  validateSearch: (s: Record<string, unknown>) => ({
+    topicId: s.topicId != null && Number.isFinite(Number(s.topicId)) ? Number(s.topicId) : undefined,
+    url: typeof s.url === "string" ? s.url : undefined,
+    title: typeof s.title === "string" ? s.title : undefined,
+    author: typeof s.author === "string" ? s.author : undefined,
+  }),
+  loader: () => loadPage({ data: packArgs([{}, {}]) }),
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { topics } = Route.useLoaderData();
+  const search = Route.useSearch();
+  const initial = { ...search, topicId: search.topicId?.toString() };
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Create Note</h1>
-      <CreateNoteForm topics={topics} />
+      <h1 className="mb-5 text-[22px] font-semibold tracking-[-0.02em]">Create Note</h1>
+      <CreateNoteForm topics={topics} initial={initial} />
     </div>
   );
 }

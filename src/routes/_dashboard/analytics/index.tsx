@@ -6,7 +6,7 @@ import DashboardLoading from "@/features/dashboard/loading";
 import { AnalyticsView } from "@/features/dashboard/analytics/analytics-view";
 
 
-type Search = {
+type _Search = {
   tab?: string;
   q?: string;
   os?: string;
