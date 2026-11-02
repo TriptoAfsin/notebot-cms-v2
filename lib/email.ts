@@ -1,6 +1,15 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let client: Resend | null = null;
+/**
+ * Created on first send. `new Resend(undefined)` throws, and doing it at import time took down every
+ * page whose server code imported this module whenever the key was unset (local dev, previews).
+ */
+function resend(): Resend {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY is not set; email not sent");
+  return (client ??= new Resend(key));
+}
 const fromEmail = process.env.RESEND_FROM_EMAIL || "NoteBot <noreply@notebot.com>";
 
 export async function sendInvitationEmail({
@@ -12,7 +21,7 @@ export async function sendInvitationEmail({
   inviteUrl: string;
   role: string;
 }) {
-  return resend.emails.send({
+  return resend().emails.send({
     from: fromEmail,
     to,
     subject: "You're invited to NoteBot CMS",
@@ -44,7 +53,7 @@ export async function sendSubmissionAcknowledgement({
   topicName: string;
   trackUrl: string;
 }) {
-  return resend.emails.send({
+  return resend().emails.send({
     from: fromEmail,
     to,
     subject: "Note Submission Received - NoteBot",
@@ -89,7 +98,7 @@ export async function sendNewSubmissionNotification({
   noteLink: string;
   contactInfo: string;
 }) {
-  return resend.emails.send({
+  return resend().emails.send({
     from: fromEmail,
     to,
     subject: `New Note Submission from ${name}`,
@@ -135,7 +144,7 @@ export async function sendSubmissionReviewNotification({
   const statusTextColor = isApproved ? "#166534" : "#991b1b";
   const statusLabel = isApproved ? "Approved" : "Rejected";
 
-  return resend.emails.send({
+  return resend().emails.send({
     from: fromEmail,
     to,
     subject: `Note Submission ${statusLabel} - NoteBot`,

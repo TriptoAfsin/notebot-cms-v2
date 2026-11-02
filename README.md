@@ -4,7 +4,8 @@ Content management system for BUTEX NoteBot. Manage academic notes, lab reports,
 
 ## Tech Stack
 
-- **Framework:** Next.js 16 (App Router)
+- **Framework:** TanStack Start (Vite + Nitro), ported from Next.js 16 in Nov 2026
+- **Charts / graphs:** Evil Charts (Recharts), React Flow + dagre for the bot flow map
 - **Language:** TypeScript
 - **Database:** PostgreSQL (via Drizzle ORM)
 - **Cache:** Redis for cache invalidation
@@ -89,44 +90,33 @@ npm run db:studio
 ## Project Structure
 
 ```
-app/
-  (dashboard)/        # Protected routes (require login)
-    levels/           # Levels CRUD
-    subjects/         # Subjects CRUD
-    topics/           # Topics CRUD
-    notes/            # Notes CRUD
-    lab-reports/      # Lab reports CRUD
-    question-banks/   # Question banks CRUD
-    routines/         # Routines CRUD
-    results/          # Results CRUD
-    users/            # User management
-    invitations/      # Invitation management + create
-    submissions/      # Submission review + detail
-  invite/[token]/     # Public - invitation registration
-  submit/             # Public - note submission form
-  submit/track/       # Public - submission status tracker
-  login/              # Login page
-  setup/              # First-time admin setup
-  api/auth/           # Auth API routes
+src/
+  routes/             # File routes (TanStack Router); _dashboard.tsx is the authed shell
+  start.ts            # CSRF + post-mutation router invalidation
+  routeTree.gen.ts    # Generated, committed
+features/             # Page components (dashboard, submissions queue, bot flow map, public pages)
+actions/              # Server functions (same signatures as the old Server Actions)
+  _impl/              # Server-only implementations
+services/             # DB queries, cache invalidation, submission checks, flow map
 lib/
   db/schema/          # Drizzle ORM schema
   auth.ts             # Better Auth config
-  auth-client.ts      # Client-side auth
-  email.ts            # Resend email functions
-actions/              # Server actions (form handling + Zod validation)
-services/             # DB queries + cache invalidation
+  email.ts            # Resend email functions (client created lazily)
 components/
-  ui/                 # shadcn/ui components
-  layout/             # Sidebar, layout components
+  ui/                 # shadcn/ui (vendored)
+  evilcharts/         # Evil Charts (vendored)
+  layout/             # Sidebar, header
 drizzle/              # Generated migration SQL files
 ```
+
+See AGENTS.md for conventions and gotchas.
 
 ## Scripts
 
 ```bash
 npm run dev           # Start development server
 npm run build         # Build for production
-npm run start         # Start production server
+npm run start         # Start production server (Node, 256 MB heap cap)
 npm run lint          # Run ESLint
 npm run db:generate   # Generate migration from schema changes
 npm run db:migrate    # Apply migrations to database

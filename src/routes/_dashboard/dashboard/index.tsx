@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { packArgs, passThrough, requireSession, unpackArgs } from "@/lib/server-fn";
 import DashboardLoading from "@/features/dashboard/loading";
-import { getDashboardDataAction } from "@/actions/dashboard.action";
 import { DashboardView } from "@/features/dashboard/dashboard/dashboard-view";
 
 
@@ -14,6 +13,10 @@ const loadPage = createServerFn({ method: "GET" })
   .handler(async ({ data: __input }) => {
     const [__params, __search] = unpackArgs(__input) as [Record<string, string>, Record<string, string>];
     void __params; void __search;
+    // Call the implementation directly: this handler already runs on the server behind
+    // requireSession, and a server function that is only ever called from server code is not
+    // registered by the production build ("Server function info not found").
+    const { getDashboardDataAction } = await import("@/actions/_impl/dashboard.action");
     const data = await getDashboardDataAction();
     return { data };
   });
