@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 
 import { EditPanel } from "./edit-panel";
+import { BotFlowsTabs } from "./tabs";
 
 type Flow = {
   id: number;
@@ -70,7 +71,8 @@ export function BotFlowsView({
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+       <div className="min-w-0">
         <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Bot flows</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
           The Messenger replies that are <em>not</em> rows in the content tables — usage
@@ -78,6 +80,8 @@ export function BotFlowsView({
           labs, routines and syllabuses are resolved live by the engine; edit those in their own
           sections instead.
         </p>
+       </div>
+       <BotFlowsTabs active="list" />
       </div>
 
       {/* These payloads also name a topic or subject, so the engine would have somewhere to go if the

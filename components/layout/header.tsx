@@ -24,7 +24,7 @@ function useCrumbs() {
   const item = [...navItems].sort((a, b) => b.href.length - a.href.length).find((i) => pathname === i.href || pathname.startsWith(i.href + "/"));
   if (!item) return [];
   const rest = pathname.slice(item.href.length).split("/").filter(Boolean);
-  const tail = rest[0] === "new" ? "New" : rest[0] === "settings" ? "Settings" : rest[0] ? "Edit" : null;
+  const tail = rest[0] === "new" ? "New" : rest[0] === "settings" ? "Settings" : rest[0] === "map" ? "Map" : rest[0] ? "Edit" : null;
   return [GROUP_OF[item.href] ?? "Content", item.label, ...(tail ? [tail] : [])];
 }
 

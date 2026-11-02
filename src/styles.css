@@ -189,3 +189,23 @@ body { font-size: 14px; font-feature-settings: "tnum" 0; -webkit-font-smoothing:
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* Flow map (React Flow), on the Ledger tokens. */
+.react-flow {
+  --xy-background-color: var(--background);
+  --xy-background-pattern-color: color-mix(in oklch, var(--muted-foreground) 22%, transparent);
+  --xy-edge-stroke: color-mix(in oklch, var(--muted-foreground) 55%, transparent);
+  --xy-controls-button-background-color: var(--card);
+  --xy-controls-button-border-color: var(--border);
+  --xy-controls-button-color: var(--foreground);
+  --xy-minimap-background-color: var(--card);
+  --xy-minimap-mask-background-color: color-mix(in oklch, var(--background) 70%, transparent);
+  --xy-node-border-radius: 6px;
+}
+.react-flow .fm-handle { width: 6px; height: 6px; min-width: 0; min-height: 0; border: 0; background: var(--border); }
+.react-flow .fm-edge-content path { stroke-dasharray: 4 3; }
+.react-flow .fm-edge-broken path { stroke: var(--destructive); }
+.react-flow .fm-edge-broken .react-flow__edge-text { fill: var(--destructive); font-size: 10px; }
+.react-flow .fm-dim { opacity: 0.2; }
+.react-flow .react-flow__node { cursor: pointer; }
+.react-flow .react-flow__controls { box-shadow: none; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }

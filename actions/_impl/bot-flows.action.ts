@@ -161,3 +161,10 @@ export async function getRetirableFlowsAction() {
   `);
   return rows.filter((r) => r.matched);
 }
+
+/** The whole bot as a graph, with broken links and orphans. Blocks stay on the server. */
+export async function getFlowMapAction() {
+  if (!(await requireUser())) return null;
+  const { getFlowMap } = await import("@/services/flow-map.service");
+  return getFlowMap();
+}

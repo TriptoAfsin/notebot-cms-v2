@@ -53,3 +53,13 @@ const getRetirableFlowsAction__server = createServerFn({ method: "GET" })
   });
 export const getRetirableFlowsAction = (...args: Parameters<typeof Impl.getRetirableFlowsAction>) =>
   getRetirableFlowsAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getRetirableFlowsAction>;
+
+const getFlowMapAction__server = createServerFn({ method: "GET" })
+  .middleware([requireSession])
+  .validator(passThrough)
+  .handler(async ({ data }) => {
+    const impl = await import("./_impl/bot-flows.action");
+    return impl.getFlowMapAction(...(unpackArgs(data) as Parameters<typeof Impl.getFlowMapAction>));
+  });
+export const getFlowMapAction = (...args: Parameters<typeof Impl.getFlowMapAction>) =>
+  getFlowMapAction__server({ data: packArgs(args) }) as unknown as ReturnType<typeof Impl.getFlowMapAction>;

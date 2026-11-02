@@ -1,5 +1,5 @@
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, useEffect } from "react";
 import { Braces, Eye, LayoutList, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
@@ -43,6 +43,13 @@ export function EditPanel({ flow, onClose }: { flow: Flow; onClose: () => void }
   const [kind, setKind] = useState(flow.kind);
   const [enabled, setEnabled] = useState(flow.enabled);
   const [pending, start] = useTransition();
+
+  // Escape closes, wherever focus is (it starts on the page behind the dialog).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !pending) onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pending, onClose]);
 
   // The visual builder is the source of truth unless the JSON tab is open, in which case the text is.
   const [jsonDirty, setJsonDirty] = useState(false);
@@ -105,8 +112,8 @@ export function EditPanel({ flow, onClose }: { flow: Flow; onClose: () => void }
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4" role="dialog" aria-modal="true">
-      <Card className="my-4 w-full max-w-4xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4" role="dialog" aria-modal="true" aria-label={`Edit flow ${flow.payload}`}>
+      <Card className="my-4 w-full max-w-4xl xl:max-w-6xl">
         <CardHeader className="gap-3 pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <MessageSquare className="h-4 w-4" aria-hidden="true" />
@@ -145,7 +152,7 @@ export function EditPanel({ flow, onClose }: { flow: Flow; onClose: () => void }
                 size="sm"
                 onClick={() => switchTo(t.key)}
               >
-                <t.icon className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                <t.icon className="h-3.5 w-3.5" aria-hidden="true" />
                 {t.label}
               </Button>
             ))}
@@ -156,7 +163,18 @@ export function EditPanel({ flow, onClose }: { flow: Flow; onClose: () => void }
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {mode === "visual" && <FlowBuilder blocks={blocks} onChange={setBlocks} />}
+          {/* Wide screens: builder and a live Messenger preview side by side. */}
+          {mode === "visual" && (
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+              <div className="min-w-0"><FlowBuilder blocks={blocks} onChange={setBlocks} /></div>
+              <aside aria-label="Live preview" className="hidden xl:block">
+                <div className="sticky top-4 rounded-lg border bg-background p-3">
+                  <p className="mb-2 font-mono text-[10.5px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Live preview</p>
+                  <FlowPreview blocks={blocks} />
+                </div>
+              </aside>
+            </div>
+          )}
 
           {mode === "preview" && <FlowPreview blocks={blocks} />}
 
@@ -187,7 +205,7 @@ export function EditPanel({ flow, onClose }: { flow: Flow; onClose: () => void }
                 {serialisedIssues.length > 6 && <li>…and {serialisedIssues.length - 6} more</li>}
               </ul>
             ) : !blocked ? (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400">
+              <p className="text-xs text-primary">
                 Within Meta&apos;s limits — 20-char button titles, 3 buttons per template, 640-char
                 template text.
               </p>

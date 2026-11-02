@@ -21,6 +21,7 @@ import { Route as DashboardAnalyticsIndexRouteImport } from './routes/_dashboard
 import { Route as DashboardApiKeysIndexRouteImport } from './routes/_dashboard/api-keys/index'
 import { Route as DashboardAuditIndexRouteImport } from './routes/_dashboard/audit/index'
 import { Route as DashboardBotFlowsIndexRouteImport } from './routes/_dashboard/bot-flows/index'
+import { Route as DashboardBotFlowsMapRouteImport } from './routes/_dashboard/bot-flows/map'
 import { Route as DashboardContentNewRouteImport } from './routes/_dashboard/content/new'
 import { Route as DashboardContributorsIndexRouteImport } from './routes/_dashboard/contributors/index'
 import { Route as DashboardDashboardIndexRouteImport } from './routes/_dashboard/dashboard/index'
@@ -119,6 +120,11 @@ const DashboardAuditIndexRoute = DashboardAuditIndexRouteImport.update({
 const DashboardBotFlowsIndexRoute = DashboardBotFlowsIndexRouteImport.update({
   id: '/bot-flows/',
   path: '/bot-flows/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardBotFlowsMapRoute = DashboardBotFlowsMapRouteImport.update({
+  id: '/bot-flows/map',
+  path: '/bot-flows/map',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardContentNewRoute = DashboardContentNewRouteImport.update({
@@ -340,6 +346,7 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof InviteTokenRoute
   '/submit/track': typeof SubmitTrackRoute
   '/submit/': typeof SubmitIndexRoute
+  '/bot-flows/map': typeof DashboardBotFlowsMapRoute
   '/content/new': typeof DashboardContentNewRoute
   '/invitations/new': typeof DashboardInvitationsNewRoute
   '/lab-reports/$id': typeof DashboardLabReportsIdRoute
@@ -393,6 +400,7 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/submit/track': typeof SubmitTrackRoute
   '/submit': typeof SubmitIndexRoute
+  '/bot-flows/map': typeof DashboardBotFlowsMapRoute
   '/content/new': typeof DashboardContentNewRoute
   '/invitations/new': typeof DashboardInvitationsNewRoute
   '/lab-reports/$id': typeof DashboardLabReportsIdRoute
@@ -448,6 +456,7 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/submit/track': typeof SubmitTrackRoute
   '/submit/': typeof SubmitIndexRoute
+  '/_dashboard/bot-flows/map': typeof DashboardBotFlowsMapRoute
   '/_dashboard/content/new': typeof DashboardContentNewRoute
   '/_dashboard/invitations/new': typeof DashboardInvitationsNewRoute
   '/_dashboard/lab-reports/$id': typeof DashboardLabReportsIdRoute
@@ -503,6 +512,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/submit/track'
     | '/submit/'
+    | '/bot-flows/map'
     | '/content/new'
     | '/invitations/new'
     | '/lab-reports/$id'
@@ -556,6 +566,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/submit/track'
     | '/submit'
+    | '/bot-flows/map'
     | '/content/new'
     | '/invitations/new'
     | '/lab-reports/$id'
@@ -610,6 +621,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/submit/track'
     | '/submit/'
+    | '/_dashboard/bot-flows/map'
     | '/_dashboard/content/new'
     | '/_dashboard/invitations/new'
     | '/_dashboard/lab-reports/$id'
@@ -753,6 +765,13 @@ declare module '@tanstack/react-router' {
       path: '/bot-flows'
       fullPath: '/bot-flows/'
       preLoaderRoute: typeof DashboardBotFlowsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/bot-flows/map': {
+      id: '/_dashboard/bot-flows/map'
+      path: '/bot-flows/map'
+      fullPath: '/bot-flows/map'
+      preLoaderRoute: typeof DashboardBotFlowsMapRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/content/new': {
@@ -1039,6 +1058,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardRouteChildren {
+  DashboardBotFlowsMapRoute: typeof DashboardBotFlowsMapRoute
   DashboardContentNewRoute: typeof DashboardContentNewRoute
   DashboardInvitationsNewRoute: typeof DashboardInvitationsNewRoute
   DashboardLabReportsIdRoute: typeof DashboardLabReportsIdRoute
@@ -1084,6 +1104,7 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardBotFlowsMapRoute: DashboardBotFlowsMapRoute,
   DashboardContentNewRoute: DashboardContentNewRoute,
   DashboardInvitationsNewRoute: DashboardInvitationsNewRoute,
   DashboardLabReportsIdRoute: DashboardLabReportsIdRoute,
