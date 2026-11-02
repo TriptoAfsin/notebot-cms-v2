@@ -1,7 +1,8 @@
 
 import Link from "@/components/link";
+import { useRouteContext } from "@tanstack/react-router";
 import {
-  ArrowUpRight, BookOpen, Calendar, FileText, FlaskConical, GraduationCap,
+  ArrowUpRight, BookOpen, Calendar, FilePlus2, FileText, FlaskConical, GraduationCap,
   HelpCircle, Layers, ScrollText, SearchX,
 } from "lucide-react";
 
@@ -26,8 +27,57 @@ const monthLabel = (m: string) => {
   return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][Number(mo) - 1]} ${y.slice(2)}`;
 };
 
+/** Time-of-day greeting in Dhaka time, so server and browser render the same text. */
+function greeting() {
+  const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: "Asia/Dhaka" }).format(new Date()));
+  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+}
+
+function Delta({ pct }: { pct: number }) {
+  const up = pct >= 0;
+  return (
+    <span className={up ? "text-primary" : "text-destructive"}>
+      {up ? "+" : ""}
+      {pct.toFixed(1)}%
+    </span>
+  );
+}
+
+/** Tiny trend line for a KPI tile. Pure SVG, scaled to the series' own range. */
+function Sparkline({ values }: { values: number[] }) {
+  if (values.length < 2) return null;
+  const min = Math.min(...values), max = Math.max(...values), span = max - min || 1;
+  const pts = values.map((v, i) => [(i / (values.length - 1)) * 100, 24 - ((v - min) / span) * 20 - 2]);
+  const line = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
+  return (
+    <svg viewBox="0 0 100 26" preserveAspectRatio="none" className="mt-auto h-[26px] w-full pt-1.5" aria-hidden="true">
+      <path d={`${line} L100 26 L0 26Z`} className="fill-primary/10" />
+      <path d={line} className="fill-none stroke-primary" strokeWidth={1.6} vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+function Kpi({ label, value, hint, spark, href, tone }: {
+  label: string; value: string; hint?: React.ReactNode; spark?: number[]; href?: string; tone?: "warn";
+}) {
+  const body = (
+    <div className="flex h-full flex-col rounded-lg border bg-card px-4 py-3 transition-colors duration-100 group-hover:border-muted-foreground/40">
+      <p className="font-mono text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">{label}</p>
+      <p className={`mt-1 text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums ${tone === "warn" ? "text-warning" : ""}`}>{value}</p>
+      {hint && <p className="mt-1.5 font-mono text-[11.5px] text-muted-foreground">{hint}</p>}
+      {spark && <Sparkline values={spark} />}
+    </div>
+  );
+  return href ? (
+    <Link href={href} className="group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{body}</Link>
+  ) : (
+    <div>{body}</div>
+  );
+}
+
 export function DashboardView({ data }: { data: DashboardData }) {
   const { stats, analytics } = data;
+  const { user } = useRouteContext({ from: "/_dashboard" });
 
   // Two rows of four: the content tree first, then the standalone resource tables.
   const kpiRows = [
@@ -64,73 +114,114 @@ export function DashboardView({ data }: { data: DashboardData }) {
     ? Math.round((data.deptCoverage.tagged / data.deptCoverage.total) * 100)
     : 0;
 
+  // Headline numbers. Requests come from the analytics schema (app + Messenger bot, per month).
+  // The query includes the current month, which is partial: on the 2nd it reads as a 90% drop. The
+  // headline and chart use complete months only; the partial month is shown as "so far".
+  const allTraffic = analytics?.traffic ?? [];
+  const thisMonth = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", timeZone: "Asia/Dhaka" }).format(new Date());
+  const partial = allTraffic.at(-1)?.month === thisMonth ? allTraffic.at(-1) : undefined;
+  const traffic = partial ? allTraffic.slice(0, -1) : allTraffic;
+  const monthTotal = (t?: (typeof allTraffic)[number]) => (t ? Number(t.app ?? 0) + Number(t.bot ?? 0) : 0);
+  const lastMonth = traffic.at(-1);
+  const reqLast = monthTotal(lastMonth);
+  const reqPrev = monthTotal(traffic.at(-2));
+  const reqDelta = reqPrev ? ((reqLast - reqPrev) / reqPrev) * 100 : null;
+  const pending = data.submissions.pending;
+  const firstName = (user?.name || "").split(" ")[0];
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-[22px] font-semibold tracking-[-0.02em]">
+            {greeting()}{firstName ? `, ${firstName}` : ""}
+          </h1>
+          <p className="mt-0.5 text-[13.5px] text-muted-foreground">
+            {pending > 0 ? (
+              <>
+                <Link href="/submissions" className="font-medium text-primary hover:underline">
+                  {pending} {pending === 1 ? "submission is" : "submissions are"} waiting for review
+                </Link>
+                .{" "}
+              </>
+            ) : (
+              "The review queue is clear. "
+            )}
+            {nf.format(stats.notes)} notes across {nf.format(stats.topics)} topics.
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={ANALYTICS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-sm font-medium whitespace-nowrap transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border bg-card px-3 text-[13px] font-medium whitespace-nowrap transition-[transform,border-color] duration-150 hover:border-muted-foreground/50 active:scale-[0.97]"
           >
             API analytics
             <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="sr-only">(opens analytics.butexnotebot.com in a new tab)</span>
           </Link>
           <FlushCacheButton />
+          <Link
+            href="/content/new"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-[transform,background-color] duration-150 hover:bg-primary/90 active:scale-[0.97]"
+          >
+            <FilePlus2 className="h-4 w-4" aria-hidden="true" />
+            New content
+          </Link>
         </div>
       </div>
 
-      {/* ---- KPIs, two rows ---- */}
-      <div className="space-y-3">
-        {kpiRows.map((row, i) => (
-          <div key={i} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {row.map((card) => (
-              <Link key={card.title} href={card.href} className="group focus-visible:outline-none">
-                {/* py-2.5 overrides Card's built-in py-6 — with it, eight tiles cost ~220px of
-                    vertical space before a single chart is visible. */}
-                <Card className="h-full py-2.5 transition-colors group-hover:border-foreground/20 group-focus-visible:ring-2 group-focus-visible:ring-ring">
-                  <CardContent className="flex items-center gap-2.5 px-3">
-                    <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${card.bg}`}>
-                      <card.icon className={`h-3.5 w-3.5 ${card.tint}`} aria-hidden="true" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-lg leading-tight font-bold tabular-nums">
-                        {nf.format(card.value)}
-                      </div>
-                      <p className="truncate text-[11px] leading-tight text-muted-foreground">
-                        {card.title}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        ))}
+      {/* ---- Headline KPIs ---- */}
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <Kpi
+          label={lastMonth ? `Requests · ${monthLabel(lastMonth.month)}` : "Requests"}
+          value={analytics ? compact(reqLast) : "—"}
+          hint={
+            <>
+              {reqDelta === null ? "app + Messenger bot" : <><Delta pct={reqDelta} /> vs previous month</>}
+              {partial && <span className="block">{monthLabel(partial.month).split(" ")[0]} so far: {compact(monthTotal(partial))}</span>}
+            </>
+          }
+          spark={traffic.map((t) => monthTotal(t))}
+        />
+        <Kpi label="App users" value={analytics ? nf.format(analytics.totals.users) : "—"} hint="registered in the web app" />
+        <Kpi label="Notes" value={nf.format(stats.notes)} hint={`${nf.format(stats.subjects)} subjects · ${nf.format(stats.levels)} levels`} href="/notes" />
+        <Kpi
+          label="Pending review"
+          value={nf.format(pending)}
+          hint={pending ? "open the review queue →" : "nothing waiting"}
+          href="/submissions"
+          tone={pending ? "warn" : undefined}
+        />
       </div>
+
+      {/* ---- Content ledger: every table, one line ---- */}
+      <nav aria-label="Content tables" className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card sm:grid-cols-4 xl:grid-cols-8">
+        {kpiRows.flat().map((c) => (
+          <Link
+            key={c.title}
+            href={c.href}
+            className="group flex items-center justify-between gap-2 border-b border-r px-3 py-2.5 transition-colors duration-100 hover:bg-muted/60 [&:nth-child(2n)]:border-r-0 sm:[&:nth-child(2n)]:border-r sm:[&:nth-child(4n)]:border-r-0 xl:border-b-0 xl:[&:nth-child(4n)]:border-r xl:[&:nth-child(8n)]:border-r-0"
+          >
+            <span className="flex min-w-0 items-center gap-2 text-[12.5px] text-muted-foreground group-hover:text-foreground">
+              <c.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{c.title}</span>
+            </span>
+            <span className="font-mono text-[13px] font-medium tabular-nums">{nf.format(c.value)}</span>
+          </Link>
+        ))}
+      </nav>
 
       {/* ---- Traffic ---- */}
       <Card>
         <CardHeader className="flex-row items-start justify-between gap-3 pb-2">
           <div className="min-w-0">
-            <CardTitle className="text-base font-semibold">Requests per month</CardTitle>
+            <CardTitle className="text-[13.5px] font-semibold">Requests per month</CardTitle>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Last 12 months, web app vs Messenger bot
+              Last {traffic.length} complete months, web app vs Messenger bot
             </p>
           </div>
-          {analytics && (
-            <Link
-              href={ANALYTICS_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 text-xs font-medium text-muted-foreground whitespace-nowrap hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              Full analytics <ArrowUpRight className="inline h-3 w-3" aria-hidden="true" />
-            </Link>
-          )}
         </CardHeader>
         <CardContent>
           <div className="h-72 min-w-0">
@@ -139,7 +230,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
             ) : (
               <EvilAreaChart
                 className="h-full w-full"
-                data={analytics.traffic}
+                data={traffic}
                 config={trafficConfig}
                 stackType="stacked"
                 xDataKey="month"
@@ -149,10 +240,10 @@ export function DashboardView({ data }: { data: DashboardData }) {
                 <EvilAreaChart.YAxis tickFormatter={(v) => compact(Number(v))} />
                 <EvilAreaChart.Legend isClickable />
                 <EvilAreaChart.Tooltip variant="frosted-glass" />
-                <EvilAreaChart.Area dataKey="app" variant="gradient" isClickable>
+                <EvilAreaChart.Area dataKey="app" variant="gradient" strokeVariant="solid" isClickable>
                   <EvilAreaChart.ActiveDot variant="colored-border" />
                 </EvilAreaChart.Area>
-                <EvilAreaChart.Area dataKey="bot" variant="gradient" isClickable>
+                <EvilAreaChart.Area dataKey="bot" variant="gradient" strokeVariant="solid" isClickable>
                   <EvilAreaChart.ActiveDot variant="colored-border" />
                 </EvilAreaChart.Area>
               </EvilAreaChart>
@@ -165,7 +256,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Content mix</CardTitle>
+            <CardTitle className="text-[13.5px] font-semibold">Content mix</CardTitle>
             <p className="mt-0.5 text-xs text-muted-foreground">Every published resource by type</p>
           </CardHeader>
           <CardContent>
@@ -187,7 +278,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Depth per level</CardTitle>
+            <CardTitle className="text-[13.5px] font-semibold">Depth per level</CardTitle>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Topics are the buttons students tap; notes are what sits behind them
             </p>
@@ -217,7 +308,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Notes by department</CardTitle>
+            <CardTitle className="text-[13.5px] font-semibold">Notes by department</CardTitle>
             {/* A department chart that quietly speaks for a fifth of the corpus reads as though it
                 speaks for all of it, so the coverage is stated rather than implied. */}
             <p className="mt-0.5 text-xs text-muted-foreground">
@@ -249,7 +340,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Readers by department</CardTitle>
+            <CardTitle className="text-[13.5px] font-semibold">Readers by department</CardTitle>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {analytics ? `${nf.format(analytics.totals.users)} registered app users` : "From the analytics schema"}
             </p>
@@ -284,7 +375,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Searched but not found</CardTitle>
+            <CardTitle className="text-[13.5px] font-semibold">Searched but not found</CardTitle>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Terms the bot could not match{analytics ? ` — ${nf.format(analytics.totals.misses)} misses logged` : ""}. Each one is a note worth adding.
             </p>
@@ -319,7 +410,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
 
         <Card>
           <CardHeader className="flex-row items-center justify-between gap-2 pb-2">
-            <CardTitle className="text-base font-semibold">Recent submissions</CardTitle>
+            <CardTitle className="text-[13.5px] font-semibold">Recent submissions</CardTitle>
             {data.submissions.pending > 0 && (
               <Badge className="shrink-0 bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400">
                 {data.submissions.pending} pending

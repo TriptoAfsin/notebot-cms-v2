@@ -9,7 +9,7 @@ import { type ChartConfig } from "@/components/evilcharts/ui/recharts-chart";
  * scattered as literals across the view, and the light/dark pairs stay adjacent so a tweak to one
  * mode cannot silently skip the other.
  *
- * Hues match the sidebar and KPI icons: notes are sky, lab reports pink, routines teal, and so on.
+ * Notes take the Ledger accent (emerald); other series use calmer neighbours so the accent stays the loudest colour.
  */
 
 type Stops = { light: string[]; dark: string[] };
@@ -17,7 +17,7 @@ type Stops = { light: string[]; dark: string[] };
 export const PALETTE = {
   violet: { light: ["#8b5cf6", "#c4b5fd"], dark: ["#a78bfa", "#6d28d9"] },
   amber: { light: ["#f59e0b", "#fcd34d"], dark: ["#fbbf24", "#b45309"] },
-  emerald: { light: ["#10b981", "#6ee7b7"], dark: ["#34d399", "#047857"] },
+  emerald: { light: ["#16a065", "#86d9b0"], dark: ["#3fcf8e", "#0f6b45"] }, // = --primary (Ledger accent)
   sky: { light: ["#0ea5e9", "#7dd3fc"], dark: ["#38bdf8", "#0369a1"] },
   pink: { light: ["#ec4899", "#f9a8d4"], dark: ["#f472b6", "#be185d"] },
   orange: { light: ["#f97316", "#fdba74"], dark: ["#fb923c", "#c2410c"] },
@@ -30,8 +30,8 @@ export const PALETTE = {
 
 /** Deterministic colour per category, so a department keeps its hue across charts and reloads. */
 const CYCLE: Stops[] = [
-  PALETTE.sky, PALETTE.violet, PALETTE.emerald, PALETTE.amber, PALETTE.pink,
-  PALETTE.teal, PALETTE.orange, PALETTE.indigo, PALETTE.fuchsia, PALETTE.rose,
+  PALETTE.emerald, PALETTE.sky, PALETTE.amber, PALETTE.violet, PALETTE.teal,
+  PALETTE.slate, PALETTE.orange, PALETTE.indigo, PALETTE.pink, PALETTE.rose,
 ];
 
 export function cycleConfig(keys: string[], labels?: (k: string) => string): ChartConfig {
@@ -41,23 +41,23 @@ export function cycleConfig(keys: string[], labels?: (k: string) => string): Cha
 }
 
 export const trafficConfig = {
-  app: { label: "Web app", colors: PALETTE.sky },
-  bot: { label: "Messenger bot", colors: PALETTE.violet },
+  app: { label: "Web app", colors: PALETTE.emerald },
+  bot: { label: "Messenger bot", colors: PALETTE.sky },
 } satisfies ChartConfig;
 
 export const perLevelConfig = {
-  notes: { label: "Notes", colors: PALETTE.sky },
-  topics: { label: "Topics", colors: PALETTE.emerald },
+  notes: { label: "Notes", colors: PALETTE.emerald },
+  topics: { label: "Topics", colors: PALETTE.slate },
 } satisfies ChartConfig;
 
 export const contentMixConfig = {
-  notes: { label: "Notes", colors: PALETTE.sky },
-  labReports: { label: "Lab Reports", colors: PALETTE.pink },
-  questionBanks: { label: "Q. Banks", colors: PALETTE.orange },
+  notes: { label: "Notes", colors: PALETTE.emerald },
+  labReports: { label: "Lab Reports", colors: PALETTE.sky },
+  questionBanks: { label: "Q. Banks", colors: PALETTE.amber },
   routines: { label: "Routines", colors: PALETTE.teal },
-  syllabuses: { label: "Syllabuses", colors: PALETTE.fuchsia },
+  syllabuses: { label: "Syllabuses", colors: PALETTE.violet },
 } satisfies ChartConfig;
 
 export const missedConfig = {
-  hits: { label: "Searches", colors: PALETTE.rose },
+  hits: { label: "Searches", colors: PALETTE.amber }, // a gap to fill, not an error
 } satisfies ChartConfig;
