@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 import { db } from "@/lib/db";
 import { questionBanks, levels } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
@@ -37,7 +38,7 @@ export async function createQuestionBank(data: {
   title: string;
   url: string;
   sortOrder: number;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 }) {
   const [qb] = await db.insert(questionBanks).values(data).returning();
   return qb;
@@ -45,7 +46,7 @@ export async function createQuestionBank(data: {
 
 export async function updateQuestionBank(
   id: number,
-  data: Partial<{ levelId: number; subjectSlug: string; title: string; url: string; sortOrder: number; metadata: Record<string, unknown> }>
+  data: Partial<{ levelId: number; subjectSlug: string; title: string; url: string; sortOrder: number; metadata: JsonObject }>
 ) {
   const [qb] = await db
     .update(questionBanks)

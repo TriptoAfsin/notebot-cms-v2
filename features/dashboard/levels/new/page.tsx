@@ -25,7 +25,7 @@ export default function NewLevelPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
+  } = useForm<z.input<typeof schema>, unknown, FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { name: "", displayName: "", slug: "", sortOrder: 0 },
   });

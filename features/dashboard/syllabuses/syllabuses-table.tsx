@@ -73,7 +73,7 @@ export function SyllabusesTable({
   const [editing, setEditing] = useState<Syllabus | null>(null);
   const router = useRouter();
 
-  const form = useForm<EditFormValues>({
+  const form = useForm<z.input<typeof editSchema>, unknown, EditFormValues>({
     resolver: zodResolver(editSchema),
   });
 

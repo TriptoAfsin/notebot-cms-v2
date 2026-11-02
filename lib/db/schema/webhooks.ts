@@ -1,3 +1,4 @@
+import type { JsonObject } from "../json";
 import { pgTable, serial, varchar, integer, timestamp, jsonb, boolean, index, text } from "drizzle-orm/pg-core";
 
 /**
@@ -47,7 +48,7 @@ export const webhookDeliveries = pgTable(
     error: varchar("error", { length: 300 }),
     attempts: integer("attempts").notNull().default(1),
     durationMs: integer("duration_ms"),
-    payload: jsonb("payload").$type<Record<string, unknown>>(),
+    payload: jsonb("payload").$type<JsonObject>(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [

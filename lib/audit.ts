@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 import { headers } from "@/lib/request-headers";
 
 import { db } from "@/lib/db";
@@ -40,8 +41,8 @@ export async function logAudit(input: {
       entityType: input.entityType,
       entityId: input.entityId ?? null,
       entityLabel: input.entityLabel?.slice(0, 500) ?? null,
-      before: (input.before as Record<string, unknown>) ?? null,
-      after: (input.after as Record<string, unknown>) ?? null,
+      before: (input.before as JsonObject) ?? null,
+      after: (input.after as JsonObject) ?? null,
       ip: ip?.slice(0, 64) ?? null,
       userAgent: h.get("user-agent")?.slice(0, 500) ?? null,
     });

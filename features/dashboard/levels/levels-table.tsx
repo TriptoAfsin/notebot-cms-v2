@@ -48,7 +48,7 @@ export function LevelsTable({ levels }: { levels: Level[] }) {
   const [pageSize, setPageSize] = useState(10);
   const [editing, setEditing] = useState<Level | null>(null);
 
-  const form = useForm<EditFormValues>({
+  const form = useForm<z.input<typeof editSchema>, unknown, EditFormValues>({
     resolver: zodResolver(editSchema),
   });
 

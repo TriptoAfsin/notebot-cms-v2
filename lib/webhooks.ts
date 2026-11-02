@@ -1,3 +1,4 @@
+﻿import type { JsonObject } from "@/lib/db/json";
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { eq, sql } from "drizzle-orm";
 
@@ -9,7 +10,7 @@ import { webhookDeliveries, webhooks } from "@/lib/db/schema";
  *
  * Signed so a receiver can prove the call came from us: `X-NoteBot-Signature` is
  * `sha256=<hmac>` over `<timestamp>.<body>`, with the timestamp sent separately. Binding the
- * timestamp into the signed string is what stops a captured request being replayed later — a
+ * timestamp into the signed string is what stops a captured request being replayed later â€” a
  * signature over the body alone stays valid forever.
  *
  * Delivery never blocks or fails the write that triggered it. A form submission must not be
@@ -17,7 +18,7 @@ import { webhookDeliveries, webhooks } from "@/lib/db/schema";
  */
 
 // The vocabulary lives in a dependency-free module so client components can import it without
-// dragging this file's database client — and therefore `pg` — into the browser bundle.
+// dragging this file's database client â€” and therefore `pg` â€” into the browser bundle.
 export { WEBHOOK_EVENTS, type WebhookEvent } from "@/lib/webhook-events";
 import { WEBHOOK_EVENTS, type WebhookEvent } from "@/lib/webhook-events";
 
@@ -74,7 +75,7 @@ async function deliver(hook: { id: number; url: string; secret: string }, event:
       responseBody = (await res.text().catch(() => "")).slice(0, MAX_BODY_LOG);
       if (res.ok) { error = null; break; }
       error = `HTTP ${res.status}`;
-      // 4xx other than 429 is the receiver rejecting the payload — retrying cannot help
+      // 4xx other than 429 is the receiver rejecting the payload â€” retrying cannot help
       if (res.status !== 429 && res.status < 500) break;
     } catch (err: unknown) {
       status = 0;
@@ -93,7 +94,7 @@ async function deliver(hook: { id: number; url: string; secret: string }, event:
     error,
     attempts: attempt,
     durationMs: Date.now() - startedAt,
-    payload,
+    payload: payload as JsonObject,
   });
 
   if (ok) {

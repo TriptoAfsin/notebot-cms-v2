@@ -42,7 +42,7 @@ type EditFormValues = z.infer<typeof editSchema>;
 type Subject = {
   id: number;
   levelId: number;
-  levelName: string;
+  levelName: string | null;
   name: string;
   displayName: string;
   slug: string;
@@ -73,7 +73,7 @@ export function SubjectsTable({
   const [editing, setEditing] = useState<Subject | null>(null);
   const router = useRouter();
 
-  const form = useForm<EditFormValues>({
+  const form = useForm<z.input<typeof editSchema>, unknown, EditFormValues>({
     resolver: zodResolver(editSchema),
   });
 
@@ -85,7 +85,7 @@ export function SubjectsTable({
         s.name.toLowerCase().includes(q) ||
         s.displayName.toLowerCase().includes(q) ||
         s.slug.toLowerCase().includes(q) ||
-        s.levelName.toLowerCase().includes(q)
+        (s.levelName ?? "").toLowerCase().includes(q)
     );
   }, [subjects, debouncedSearch]);
 

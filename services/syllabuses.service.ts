@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 import { db } from "@/lib/db";
 import { syllabuses } from "@/lib/db/schema";
 import { eq, and, asc } from "drizzle-orm";
@@ -58,7 +59,7 @@ export async function createSyllabus(data: {
   topic: string;
   url: string;
   sortOrder: number;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 }) {
   const [row] = await db.insert(syllabuses).values(data).returning();
   await syncDepartment(data.batch, data.department, data.departmentName, data.departmentSort);
@@ -75,7 +76,7 @@ export async function updateSyllabus(
     topic: string;
     url: string;
     sortOrder: number;
-    metadata: Record<string, unknown>;
+    metadata: JsonObject;
   }>
 ) {
   const [row] = await db

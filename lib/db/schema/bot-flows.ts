@@ -1,3 +1,4 @@
+import type { JsonObject } from "../json";
 import { boolean, jsonb, pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
@@ -26,10 +27,10 @@ export const botFlows = pgTable("bot_flows", {
   /** grouping for the CMS: menu | help | donation | partner | subject | level | lab | other */
   kind: varchar("kind", { length: 40 }).notNull().default("other"),
   /** the Messenger message array sent in order */
-  blocks: jsonb("blocks").$type<Record<string, unknown>[]>().notNull(),
+  blocks: jsonb("blocks").$type<JsonObject[]>().notNull(),
   /** disabled flows fall through to the resolver, then to search — useful for retiring a flow */
   enabled: boolean("enabled").notNull().default(true),
-  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+  metadata: jsonb("metadata").$type<JsonObject>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

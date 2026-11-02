@@ -45,7 +45,7 @@ type EditFormValues = z.infer<typeof editSchema>;
 type QuestionBank = {
   id: number;
   levelId: number;
-  levelName: string;
+  levelName: string | null;
   subjectSlug: string;
   title: string;
   url: string;
@@ -77,7 +77,7 @@ export function QuestionBanksTable({
   const [editing, setEditing] = useState<QuestionBank | null>(null);
   const router = useRouter();
 
-  const form = useForm<EditFormValues>({
+  const form = useForm<z.input<typeof editSchema>, unknown, EditFormValues>({
     resolver: zodResolver(editSchema),
   });
 
@@ -88,7 +88,7 @@ export function QuestionBanksTable({
       (qb) =>
         qb.title.toLowerCase().includes(q) ||
         qb.subjectSlug.toLowerCase().includes(q) ||
-        qb.levelName.toLowerCase().includes(q)
+        (qb.levelName ?? "").toLowerCase().includes(q)
     );
   }, [questionBanks, debouncedSearch]);
 

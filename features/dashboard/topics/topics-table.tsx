@@ -35,7 +35,7 @@ import { toast } from "sonner";
 type Topic = {
   id: number;
   subjectId: number;
-  subjectName: string;
+  subjectName: string | null;
   name: string;
   displayName: string;
   slug: string;
@@ -79,7 +79,7 @@ export function TopicsTable({
   const [editing, setEditing] = useState<Topic | null>(null);
   const router = useRouter();
 
-  const form = useForm<EditFormValues>({
+  const form = useForm<z.input<typeof editSchema>, unknown, EditFormValues>({
     resolver: zodResolver(editSchema),
     defaultValues: {
       subjectId: "",
@@ -101,7 +101,7 @@ export function TopicsTable({
         t.name.toLowerCase().includes(q) ||
         t.displayName.toLowerCase().includes(q) ||
         t.slug.toLowerCase().includes(q) ||
-        t.subjectName.toLowerCase().includes(q)
+        (t.subjectName ?? "").toLowerCase().includes(q)
     );
   }, [topics, debouncedSearch]);
 

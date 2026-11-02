@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 import { db } from "@/lib/db";
 import { subjects, levels } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
@@ -37,7 +38,7 @@ export async function createSubject(data: {
   displayName: string;
   slug: string;
   sortOrder: number;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 }) {
   const [subject] = await db.insert(subjects).values(data).returning();
   return subject;
@@ -45,7 +46,7 @@ export async function createSubject(data: {
 
 export async function updateSubject(
   id: number,
-  data: Partial<{ levelId: number; name: string; displayName: string; slug: string; sortOrder: number; metadata: Record<string, unknown> }>
+  data: Partial<{ levelId: number; name: string; displayName: string; slug: string; sortOrder: number; metadata: JsonObject }>
 ) {
   const [subject] = await db
     .update(subjects)

@@ -35,7 +35,7 @@ import { toast } from "sonner";
 type Note = {
   id: number;
   topicId: number;
-  topicName: string;
+  topicName: string | null;
   title: string;
   url: string;
   sortOrder: number;
@@ -78,7 +78,7 @@ export function NotesTable({
   const [editing, setEditing] = useState<Note | null>(null);
   const router = useRouter();
 
-  const form = useForm<EditFormValues>({
+  const form = useForm<z.input<typeof editSchema>, unknown, EditFormValues>({
     resolver: zodResolver(editSchema),
     defaultValues: {
       topicId: "",
@@ -97,7 +97,7 @@ export function NotesTable({
     return notes.filter(
       (n) =>
         n.title.toLowerCase().includes(q) ||
-        n.topicName.toLowerCase().includes(q) ||
+        (n.topicName ?? "").toLowerCase().includes(q) ||
         n.url.toLowerCase().includes(q)
     );
   }, [notes, debouncedSearch]);

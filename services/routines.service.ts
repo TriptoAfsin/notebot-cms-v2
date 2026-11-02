@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 import { db } from "@/lib/db";
 import { routines, levels } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
@@ -34,7 +35,7 @@ export async function createRoutine(data: {
   title: string;
   url: string;
   sortOrder: number;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 }) {
   const [routine] = await db.insert(routines).values(data).returning();
   return routine;
@@ -49,7 +50,7 @@ export async function updateRoutine(
     title: string;
     url: string;
     sortOrder: number;
-    metadata: Record<string, unknown>;
+    metadata: JsonObject;
   }>
 ) {
   const [routine] = await db

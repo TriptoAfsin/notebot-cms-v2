@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 // Server-only implementation. Import through actions/levels.action.ts (server functions).
 import { z } from "zod";
 import * as levelService from "@/services/levels.service";
@@ -12,7 +13,7 @@ const levelSchema = z.object({
   sortOrder: z.coerce.number().int().default(0),
   metadata: z.string().nullish().transform(val => {
     if (!val || val.trim() === '') return undefined;
-    try { return JSON.parse(val) as Record<string, unknown>; } catch { return undefined; }
+    try { return JSON.parse(val) as JsonObject; } catch { return undefined; }
   }),
 });
 

@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 import { db } from "@/lib/db";
 import { labReports, levels } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
@@ -39,7 +40,7 @@ export async function createLabReport(data: {
   title: string;
   url: string;
   sortOrder: number;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 }) {
   const [report] = await db.insert(labReports).values(data).returning();
   return report;
@@ -54,7 +55,7 @@ export async function updateLabReport(
     title: string;
     url: string;
     sortOrder: number;
-    metadata: Record<string, unknown>;
+    metadata: JsonObject;
   }>
 ) {
   const [report] = await db

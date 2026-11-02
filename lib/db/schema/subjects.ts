@@ -1,3 +1,4 @@
+import type { JsonObject } from "../json";
 import { pgTable, serial, varchar, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { levels } from "./levels";
 
@@ -10,7 +11,7 @@ export const subjects = pgTable("subjects", {
   displayName: varchar("display_name", { length: 100 }).notNull(),
   slug: varchar("slug", { length: 50 }).notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
-  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+  metadata: jsonb("metadata").$type<JsonObject>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

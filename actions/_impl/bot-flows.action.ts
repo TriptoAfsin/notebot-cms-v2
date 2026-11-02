@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 // Server-only implementation. Import through actions/bot-flows.action.ts (server functions).
 import { and, asc, count, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -108,7 +109,7 @@ export async function updateBotFlowAction(formData: FormData) {
     label: parsed.data.label || null,
     kind: parsed.data.kind,
     enabled: parsed.data.enabled,
-    blocks: blocks as Record<string, unknown>[],
+    blocks: blocks as JsonObject[],
     updatedAt: new Date(),
   }).where(eq(botFlows.id, parsed.data.id)).returning();
 

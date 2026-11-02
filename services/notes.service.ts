@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 import { db } from "@/lib/db";
 import { notes, topics } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
@@ -35,7 +36,7 @@ export async function createNote(data: {
   title: string;
   url: string;
   sortOrder: number;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 }) {
   const [note] = await db.insert(notes).values(data).returning();
   return note;
@@ -43,7 +44,7 @@ export async function createNote(data: {
 
 export async function updateNote(
   id: number,
-  data: Partial<{ topicId: number; title: string; url: string; sortOrder: number; metadata: Record<string, unknown> }>
+  data: Partial<{ topicId: number; title: string; url: string; sortOrder: number; metadata: JsonObject }>
 ) {
   const [note] = await db
     .update(notes)

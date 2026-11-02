@@ -1,3 +1,4 @@
+import type { JsonObject } from "../json";
 import { pgTable, serial, varchar, integer, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 
 /**
@@ -21,8 +22,8 @@ export const auditLogs = pgTable(
     entityId: integer("entity_id"),
     /** human-readable label so the log stays readable after the row is gone */
     entityLabel: varchar("entity_label", { length: 500 }),
-    before: jsonb("before").$type<Record<string, unknown> | null>(),
-    after: jsonb("after").$type<Record<string, unknown> | null>(),
+    before: jsonb("before").$type<JsonObject | null>(),
+    after: jsonb("after").$type<JsonObject | null>(),
     ip: varchar("ip", { length: 64 }),
     userAgent: varchar("user_agent", { length: 500 }),
     createdAt: timestamp("created_at").notNull().defaultNow(),

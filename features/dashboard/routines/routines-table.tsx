@@ -46,7 +46,7 @@ type EditFormValues = z.infer<typeof editSchema>;
 type Routine = {
   id: number;
   levelId: number;
-  levelName: string;
+  levelName: string | null;
   term: string | null;
   department: string | null;
   title: string;
@@ -77,7 +77,7 @@ export function RoutinesTable({
   const [editing, setEditing] = useState<Routine | null>(null);
   const router = useRouter();
 
-  const form = useForm<EditFormValues>({
+  const form = useForm<z.input<typeof editSchema>, unknown, EditFormValues>({
     resolver: zodResolver(editSchema),
   });
 
@@ -87,7 +87,7 @@ export function RoutinesTable({
     return routines.filter(
       (r) =>
         r.title.toLowerCase().includes(q) ||
-        r.levelName.toLowerCase().includes(q) ||
+        (r.levelName ?? "").toLowerCase().includes(q) ||
         (r.term && r.term.toLowerCase().includes(q)) ||
         (r.department && r.department.toLowerCase().includes(q))
     );

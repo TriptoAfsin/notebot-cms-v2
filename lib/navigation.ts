@@ -9,7 +9,7 @@ export function useRouter() {
   const router = useTsrRouter();
   return useMemo(
     () => ({
-      push: (href: string, _opts?: { scroll?: boolean }) => router.navigate({ href }),
+      push: (href: string, opts?: { scroll?: boolean }) => router.navigate({ href, resetScroll: opts?.scroll !== false }),
       replace: (href: string, opts?: { scroll?: boolean }) =>
         router.navigate({ href, replace: true, resetScroll: opts?.scroll !== false }),
       /** Next's refresh re-ran the server components; here that is re-running the route loaders. */
@@ -34,7 +34,7 @@ export function useSearchParams(): URLSearchParams {
 }
 
 export function useParams<T extends Record<string, string> = Record<string, string>>(): T {
-  return useTsrParams({ strict: false }) as T;
+  return useTsrParams({ strict: false } as never) as T;
 }
 
 export function notFound(): never {

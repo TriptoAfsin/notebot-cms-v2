@@ -46,7 +46,7 @@ type EditFormValues = z.infer<typeof editSchema>;
 type LabReport = {
   id: number;
   levelId: number;
-  levelName: string;
+  levelName: string | null;
   subjectSlug: string;
   topicName: string;
   title: string;
@@ -79,7 +79,7 @@ export function LabReportsTable({
   const [editing, setEditing] = useState<LabReport | null>(null);
   const router = useRouter();
 
-  const form = useForm<EditFormValues>({
+  const form = useForm<z.input<typeof editSchema>, unknown, EditFormValues>({
     resolver: zodResolver(editSchema),
   });
 
@@ -91,7 +91,7 @@ export function LabReportsTable({
         r.title.toLowerCase().includes(q) ||
         r.subjectSlug.toLowerCase().includes(q) ||
         r.topicName.toLowerCase().includes(q) ||
-        r.levelName.toLowerCase().includes(q)
+        (r.levelName ?? "").toLowerCase().includes(q)
     );
   }, [labReports, debouncedSearch]);
 

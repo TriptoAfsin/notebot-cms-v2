@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 import { db } from "@/lib/db";
 import { levels } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
@@ -16,7 +17,7 @@ export async function createLevel(data: {
   displayName: string;
   slug: string;
   sortOrder: number;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 }) {
   const [level] = await db.insert(levels).values(data).returning();
   return level;
@@ -24,7 +25,7 @@ export async function createLevel(data: {
 
 export async function updateLevel(
   id: number,
-  data: Partial<{ name: string; displayName: string; slug: string; sortOrder: number; metadata: Record<string, unknown> }>
+  data: Partial<{ name: string; displayName: string; slug: string; sortOrder: number; metadata: JsonObject }>
 ) {
   const [level] = await db
     .update(levels)

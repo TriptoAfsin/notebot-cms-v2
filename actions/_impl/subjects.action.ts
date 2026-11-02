@@ -1,3 +1,4 @@
+import type { JsonObject } from "@/lib/db/json";
 // Server-only implementation. Import through actions/subjects.action.ts (server functions).
 import { z } from "zod";
 import * as subjectService from "@/services/subjects.service";
@@ -13,7 +14,7 @@ const subjectSchema = z.object({
   sortOrder: z.coerce.number().int().default(0),
   metadata: z.string().nullish().transform(val => {
     if (!val || val.trim() === '') return undefined;
-    try { return JSON.parse(val) as Record<string, unknown>; } catch { return undefined; }
+    try { return JSON.parse(val) as JsonObject; } catch { return undefined; }
   }),
 });
 
