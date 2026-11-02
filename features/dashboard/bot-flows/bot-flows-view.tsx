@@ -71,7 +71,7 @@ export function BotFlowsView({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Bot flows</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Bot flows</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
           The Messenger replies that are <em>not</em> rows in the content tables — usage
           instructions, donation details, top-level menus, partner cards. Notes, topics, subjects,

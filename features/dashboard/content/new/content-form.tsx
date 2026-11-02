@@ -331,7 +331,7 @@ export function ContentForm({
                         id="kind"
                         value={kind}
                         onChange={(e) => setKind(e.target.value)}
-                        className="h-9 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm"
+                        className="h-8 w-full cursor-pointer rounded-md border border-input bg-card pl-2.5 pr-8 text-[13px]"
                       >
                         {noteKinds.map((k) => <option key={k} value={k}>{k}</option>)}
                       </select>
@@ -348,7 +348,7 @@ export function ContentForm({
                         id="department"
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
-                        className="h-9 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm"
+                        className="h-8 w-full cursor-pointer rounded-md border border-input bg-card pl-2.5 pr-8 text-[13px]"
                       >
                         <option value="">—</option>
                         {departments.map((d) => <option key={d} value={d}>{d}</option>)}

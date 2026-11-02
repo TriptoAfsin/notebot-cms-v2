@@ -112,7 +112,7 @@ export default function SubmissionDetailPage() {
   return (
     <div className="max-w-3xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Submission Details</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Submission Details</h1>
         <StatusBadge status={submission.status} />
       </div>
 

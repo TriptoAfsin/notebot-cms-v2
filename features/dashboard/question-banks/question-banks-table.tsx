@@ -133,7 +133,7 @@ export function QuestionBanksTable({
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Question Banks</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Question Banks</h1>
         <Link href="/question-banks/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />

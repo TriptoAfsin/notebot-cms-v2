@@ -47,7 +47,7 @@ export default function NewLevelPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Create Level</h1>
+      <h1 className="mb-5 text-[22px] font-semibold tracking-[-0.02em]">Create Level</h1>
       <Card>
         <CardHeader>
           <CardTitle>Level Details</CardTitle>

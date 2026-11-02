@@ -130,7 +130,7 @@ export function SubjectsTable({
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Subjects</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Subjects</h1>
         <Link href="/subjects/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
@@ -147,7 +147,7 @@ export function SubjectsTable({
           placeholder="Search subjects..."
         />
         <select
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm cursor-pointer"
+          className="h-8 min-w-[180px] cursor-pointer rounded-md border border-input bg-card pl-2.5 pr-8 text-[13px]"
           value={currentLevelId ?? ""}
           onChange={(e) => {
             const val = e.target.value;
@@ -228,7 +228,7 @@ export function SubjectsTable({
               <Label htmlFor="edit-levelId">Level</Label>
               <select
                 id="edit-levelId"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                className="flex h-8 w-full cursor-pointer rounded-md border border-input bg-card pl-2.5 pr-8 text-[13px]"
                 {...form.register("levelId")}
               >
                 <option value="">Select a level</option>

@@ -64,7 +64,7 @@ export default function NewInvitationPage() {
   if (generatedLink) {
     return (
       <div className="max-w-2xl">
-        <h1 className="text-2xl font-bold mb-6">Invitation Created</h1>
+        <h1 className="mb-5 text-[22px] font-semibold tracking-[-0.02em]">Invitation Created</h1>
         <Card>
           <CardHeader>
             <CardTitle>Share this link</CardTitle>
@@ -95,7 +95,7 @@ export default function NewInvitationPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Create Invitation</h1>
+      <h1 className="mb-5 text-[22px] font-semibold tracking-[-0.02em]">Create Invitation</h1>
       <Card>
         <CardHeader>
           <CardTitle>Invitation Details</CardTitle>

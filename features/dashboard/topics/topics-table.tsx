@@ -161,7 +161,7 @@ export function TopicsTable({
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Topics</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Topics</h1>
         <Link href="/topics/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
@@ -178,7 +178,7 @@ export function TopicsTable({
           placeholder="Search topics..."
         />
         <select
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm cursor-pointer"
+          className="h-8 min-w-[180px] cursor-pointer rounded-md border border-input bg-card pl-2.5 pr-8 text-[13px]"
           value={currentSubjectId ?? ""}
           onChange={(e) => {
             const val = e.target.value;

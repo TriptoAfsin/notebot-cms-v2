@@ -72,7 +72,7 @@ export function WebhooksView({ hooks, deliveries }: { hooks: Hook[]; deliveries:
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Webhooks</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Webhooks</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Push form submissions and content changes to another system instead of making it poll.
         </p>

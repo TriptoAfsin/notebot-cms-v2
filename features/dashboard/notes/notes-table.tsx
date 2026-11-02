@@ -156,7 +156,7 @@ export function NotesTable({
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Notes</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Notes</h1>
         <Link href="/notes/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
@@ -173,7 +173,7 @@ export function NotesTable({
           placeholder="Search notes..."
         />
         <select
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm cursor-pointer"
+          className="h-8 min-w-[180px] cursor-pointer rounded-md border border-input bg-card pl-2.5 pr-8 text-[13px]"
           value={currentTopicId ?? ""}
           onChange={(e) => {
             const val = e.target.value;

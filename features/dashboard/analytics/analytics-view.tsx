@@ -57,7 +57,7 @@ export function AnalyticsView({
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold">Analytics</h1>
+          <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Analytics</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Read-only view of the <code className="rounded bg-muted px-1 text-xs">analytics</code>{" "}
             schema, written by the analytics service.

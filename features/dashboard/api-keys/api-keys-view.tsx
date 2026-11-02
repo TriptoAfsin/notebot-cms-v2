@@ -78,7 +78,7 @@ export function ApiKeysView({ keys, baseUrl }: { keys: Key[]; baseUrl: string })
   return (
     <div>
       <div className="mb-4">
-        <h1 className="text-2xl font-bold">API keys</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">API keys</h1>
         <p className="text-sm text-muted-foreground mt-1">
           For machine callers posting to{" "}
           <code className="font-mono text-xs">/api/v1/ingest/note</code> — n8n, a script, or an AI
@@ -155,7 +155,7 @@ export function ApiKeysView({ keys, baseUrl }: { keys: Key[]; baseUrl: string })
                 id="expiresInDays"
                 name="expiresInDays"
                 defaultValue="90"
-                className="h-9 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm"
+                className="h-8 w-full cursor-pointer rounded-md border border-input bg-card pl-2.5 pr-8 text-[13px]"
               >
                 {EXPIRY_CHOICES.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>

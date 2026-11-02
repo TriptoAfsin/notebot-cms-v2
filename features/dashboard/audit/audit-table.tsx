@@ -67,7 +67,7 @@ export function AuditTable({
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Audit log</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em]">Audit log</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Every content change, with what the row looked like before it.
         </p>
