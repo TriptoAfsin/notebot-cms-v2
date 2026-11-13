@@ -122,3 +122,7 @@ npm run db:generate   # Generate migration from schema changes
 npm run db:migrate    # Apply migrations to database
 npm run db:studio     # Open Drizzle Studio (DB browser)
 ```
+
+## Support NoteBot
+
+NoteBot has been free for every BUTEX student since 2018, and it stays that way. If it helped you through an exam, you can help keep it running on [Patreon](https://www.patreon.com/triptex). Support pays for the servers, the bots and app store fees.
